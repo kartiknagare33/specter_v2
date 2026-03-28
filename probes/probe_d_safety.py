@@ -16,3 +16,4 @@ def run_probe(patient_answer):
             return 0.0
             
     return 1.0
+

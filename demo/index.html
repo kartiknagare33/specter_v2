@@ -3,728 +3,1639 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SPECTER - Glassmorphism Command Center</title>
+    <title>SPECTER · Clinical Intelligence</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Inter:wght@400;600;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap"
       rel="stylesheet"
     />
     <style>
-      /* Cyberpunk / Medical Glassmorphism Theme */
+      :root {
+        --bg: #000000;
+        --surface-1: rgba(255, 255, 255, 0.03);
+        --surface-2: rgba(255, 255, 255, 0.055);
+        --surface-3: rgba(255, 255, 255, 0.08);
+        --border: rgba(255, 255, 255, 0.08);
+        --border-hi: rgba(255, 255, 255, 0.14);
+        --blue: #0a84ff;
+        --blue-glow: rgba(10, 132, 255, 0.2);
+        --blue-subtle: rgba(10, 132, 255, 0.08);
+        --green: #30d158;
+        --green-subtle: rgba(48, 209, 88, 0.1);
+        --orange: #ff9f0a;
+        --red: #ff453a;
+        --red-subtle: rgba(255, 69, 58, 0.1);
+        --text-1: rgba(255, 255, 255, 0.92);
+        --text-2: rgba(255, 255, 255, 0.55);
+        --text-3: rgba(255, 255, 255, 0.28);
+        --text-4: rgba(255, 255, 255, 0.14);
+        --radius: 14px;
+        --radius-sm: 8px;
+        --font: "DM Sans", system-ui, sans-serif;
+        --mono: "DM Mono", monospace;
+        --blur: blur(24px) saturate(180%);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
       body {
-        background: radial-gradient(
-          circle at top right,
-          #0f172a 0%,
-          #020617 100%
-        );
-        color: #f8fafc;
-        font-family: "Inter", sans-serif;
-        margin: 0;
-        padding: 20px;
-        height: 100vh;
-        box-sizing: border-box;
-        display: grid;
-        gap: 20px;
-        grid-template-columns: 300px 1fr 400px;
-        overflow: hidden;
-      }
-
-      /* Glass Panels */
-      .glass-panel {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-        border: 1px solid rgba(56, 189, 248, 0.15);
-        border-radius: 16px;
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-
-      .sidebar {
-        padding: 20px;
-        gap: 15px;
-        overflow-y: auto;
-      }
-      .center-col {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        min-height: 0;
-        height: 100%;
-        overflow: hidden;
-      }
-
-      h1 {
-        font-size: 26px;
-        font-weight: 800;
-        margin: 0;
-        background: linear-gradient(90deg, #38bdf8, #818cf8);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        letter-spacing: 1px;
-      }
-      h2 {
-        font-size: 12px;
-        font-weight: 800;
-        margin: 0;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        padding: 15px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        background: rgba(0, 0, 0, 0.2);
-        flex-shrink: 0;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      label {
-        font-size: 11px;
-        color: #94a3b8;
-        text-transform: uppercase;
-        font-weight: 600;
-        letter-spacing: 1px;
-      }
-      input,
-      textarea {
         width: 100%;
-        padding: 12px;
-        background: rgba(0, 0, 0, 0.3);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #e2e8f0;
-        border-radius: 8px;
-        box-sizing: border-box;
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text-1);
+        font-family: var(--font);
         font-size: 13px;
-        margin-top: 5px;
-        font-family: inherit;
-        transition: border 0.3s;
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
       }
-      input:focus,
-      textarea:focus {
-        outline: none;
-        border-color: #38bdf8;
-      }
-      textarea {
-        resize: vertical;
-        min-height: 80px;
-      }
-
-      button {
-        padding: 14px;
-        font-weight: 800;
-        cursor: pointer;
-        border-radius: 8px;
-        border: none;
-        font-size: 12px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        transition: all 0.2s ease;
-      }
-      .btn-start {
-        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-        color: #fff;
-        box-shadow: 0 0 15px rgba(139, 92, 246, 0.4);
-      }
-      .btn-start:hover {
-        box-shadow: 0 0 25px rgba(139, 92, 246, 0.7);
-        transform: translateY(-1px);
-      }
-      .btn-end {
-        background: rgba(239, 68, 68, 0.1);
-        color: #fca5a5;
-        border: 1px solid #ef4444;
-        margin-top: auto;
-        flex-shrink: 0;
-      }
-      .btn-end:hover {
-        background: #ef4444;
-        color: white;
-      }
-      .btn-download {
-        background: rgba(16, 185, 129, 0.1);
-        color: #6ee7b7;
-        border: 1px solid #10b981;
-        margin-top: 10px;
-        display: none;
-        padding: 16px;
-        flex-shrink: 0;
-      }
-      .btn-download:hover {
-        background: #10b981;
-        color: white;
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(
+            ellipse 80% 50% at 20% 0%,
+            rgba(10, 132, 255, 0.07) 0%,
+            transparent 60%
+          ),
+          radial-gradient(
+            ellipse 60% 40% at 80% 100%,
+            rgba(48, 209, 88, 0.04) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+        z-index: 0;
       }
 
-      .btn-toggle {
-        background: rgba(56, 189, 248, 0.1);
-        color: #38bdf8;
-        border: 1px solid rgba(56, 189, 248, 0.3);
-        padding: 4px 10px;
-        font-size: 10px;
-        border-radius: 4px;
-        margin: 0;
-      }
-      .btn-toggle:hover {
-        background: #38bdf8;
-        color: #0f172a;
+      /* ── APP SHELL ── */
+      .app {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-rows: 56px 1fr;
+        height: 100vh;
       }
 
-      /* AI State & Telemetry */
-      .ai-state-panel {
-        text-align: center;
-        padding: 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      /* ── TITLEBAR ── */
+      .titlebar {
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: var(--blur);
+        -webkit-backdrop-filter: var(--blur);
+      }
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+      }
+      .brand-name {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+        color: var(--text-1);
+      }
+      .brand-sub {
+        font-size: 11px;
+        font-weight: 400;
+        color: var(--text-3);
+        letter-spacing: 0.04em;
+      }
+      .tb-div {
+        width: 1px;
+        height: 20px;
+        background: var(--border);
+        margin: 0 20px;
+      }
+      .tb-meta {
+        font-size: 11px;
+        color: var(--text-3);
+        font-weight: 400;
+      }
+      .tb-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      #sysClock {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 300;
+        color: var(--text-3);
+      }
+
+      .status-badge {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 11px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--surface-1);
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0.02em;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--text-4);
+        transition: all 0.4s;
+      }
+      .status-badge.live {
+        background: var(--red-subtle);
+        border-color: rgba(255, 69, 58, 0.25);
+        color: var(--red);
+      }
+      .status-badge.live .badge-dot {
+        background: var(--red);
+        box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.2);
+        animation: dot-pulse 1.4s infinite;
+      }
+      .status-badge.ended {
+        background: var(--green-subtle);
+        border-color: rgba(48, 209, 88, 0.25);
+        color: var(--green);
+      }
+      .status-badge.ended .badge-dot {
+        background: var(--green);
+      }
+      @keyframes dot-pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.3);
+        }
+        50% {
+          box-shadow: 0 0 0 5px rgba(255, 69, 58, 0);
+        }
+      }
+
+      /* ── GRID ── */
+      .grid {
+        display: grid;
+        grid-template-columns: 270px 1fr 360px;
+        height: 100%;
+        overflow: hidden;
+      }
+
+      /* ── PANE BASE ── */
+      .pane {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-right: 1px solid var(--border);
+      }
+      .pane:last-child {
+        border-right: none;
+      }
+      .pane-header {
+        padding: 14px 18px 12px;
+        border-bottom: 1px solid var(--border);
         flex-shrink: 0;
-      }
-      .ai-mode-text {
-        font-size: 20px;
-        font-weight: 800;
-        color: #38bdf8;
-        letter-spacing: 2px;
-        text-transform: uppercase;
-        text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
-      }
-      .prediction-box {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-top: 15px;
       }
-      .churn-meter-container {
-        flex: 1;
-        margin-left: 20px;
-        background: rgba(0, 0, 0, 0.5);
-        height: 8px;
-        border-radius: 4px;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.1);
+      .pane-title {
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
-      .churn-meter {
-        height: 100%;
-        width: 10%;
-        background: #34d399;
-        transition:
-          width 0.5s ease,
-          background-color 0.5s ease;
-        box-shadow: 0 0 10px #34d399;
+      .live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--red);
+        opacity: 0;
+        transition: opacity 0.3s;
+        animation: dot-pulse 1.4s infinite;
+      }
+      .live-dot.on {
+        opacity: 1;
       }
 
-      .status-indicator {
-        padding: 12px;
-        text-align: center;
-        border-radius: 8px;
-        font-weight: 800;
-        font-size: 11px;
-        letter-spacing: 2px;
+      /* ── LEFT COMMAND ── */
+      .cmd-pane {
         background: rgba(0, 0, 0, 0.3);
-        color: #64748b;
-        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .cmd-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        scrollbar-width: none;
+      }
+      .cmd-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .field-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .field-input {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-1);
+        padding: 9px 12px;
+        font-family: var(--font);
+        font-size: 13px;
+        width: 100%;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+        outline: none;
+      }
+      .field-input:focus {
+        border-color: var(--blue);
+        background: var(--blue-subtle);
+      }
+      textarea.field-input {
+        resize: none;
+        height: 72px;
+        line-height: 1.5;
+      }
+      .sep {
+        height: 1px;
+        background: var(--border);
+        margin: 2px 0;
+      }
+
+      /* BUTTONS */
+      .btn {
+        width: 100%;
+        padding: 11px 16px;
+        border-radius: var(--radius-sm);
+        border: none;
+        font-family: var(--font);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+        letter-spacing: 0.01em;
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn-primary {
+        background: var(--blue);
+        color: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+      }
+      .btn-primary:hover {
+        background: #1a8fff;
+        box-shadow: 0 2px 12px rgba(10, 132, 255, 0.35);
+      }
+      .btn-danger {
+        background: transparent;
+        color: var(--red);
+        border: 1px solid rgba(255, 69, 58, 0.25);
+      }
+      .btn-danger:hover {
+        background: var(--red-subtle);
+        border-color: rgba(255, 69, 58, 0.5);
+      }
+      .btn-success {
+        background: var(--green-subtle);
+        color: var(--green);
+        border: 1px solid rgba(48, 209, 88, 0.25);
+        display: none;
+      }
+      .btn-success:hover {
+        background: rgba(48, 209, 88, 0.15);
+      }
+
+      /* SIGNAL SCORE WIDGET */
+      .signal-block {
+        background: var(--surface-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .signal-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .signal-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .signal-val {
+        font-family: var(--mono);
+        font-size: 18px;
+        font-weight: 400;
+        color: var(--text-1);
+      }
+      .depth-badge {
+        font-size: 10px;
+        font-weight: 500;
+        padding: 3px 10px;
+        border-radius: 10px;
+        letter-spacing: 0.04em;
+        background: var(--surface-3);
+        color: var(--text-3);
+        border: 1px solid var(--border);
+        transition: all 0.4s;
+      }
+      .depth-badge.soft {
+        background: rgba(255, 159, 10, 0.1);
+        color: var(--orange);
+        border-color: rgba(255, 159, 10, 0.25);
+      }
+      .depth-badge.deep {
+        background: var(--red-subtle);
+        color: var(--red);
+        border-color: rgba(255, 69, 58, 0.25);
+      }
+      .depth-badge.standard {
+        background: var(--blue-subtle);
+        color: var(--blue);
+        border-color: rgba(10, 132, 255, 0.25);
+      }
+
+      /* PROBE ARRAY */
+      .section-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+      }
+      .probe-list {
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+      }
+      .probe-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .probe-name {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
+        width: 68px;
         flex-shrink: 0;
       }
-      .status-live {
-        background: rgba(139, 92, 246, 0.1);
-        color: #c084fc;
-        border-color: #8b5cf6;
-        animation: pulse-purple 2s infinite;
+      .probe-track {
+        flex: 1;
+        height: 2px;
+        background: var(--surface-3);
+        border-radius: 2px;
+        overflow: hidden;
       }
-      .status-ended {
-        background: rgba(16, 185, 129, 0.1);
-        color: #6ee7b7;
-        border-color: #10b981;
+      .probe-fill {
+        height: 100%;
+        width: 100%;
+        border-radius: 2px;
+        background: var(--green);
+        transition:
+          width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+          background 0.4s;
+      }
+      .probe-score {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 300;
+        color: var(--text-3);
+        width: 24px;
+        text-align: right;
+        transition: color 0.4s;
       }
 
-      /* Center Panels (Graph & Transcript) */
-      #graphPanel {
-        flex: 0.8;
-        min-height: 250px;
+      /* ── CENTER ── */
+      .center-pane {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.15);
+      }
+
+      #radarPane {
+        flex: 0 0 52%;
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid var(--border);
+        overflow: hidden;
+      }
+      #radarCanvas {
+        flex: 1;
+        min-height: 0;
+      }
+      #radarSvg {
+        width: 100%;
+        height: 100%;
+      }
+
+      #waveWrap {
+        height: 52px;
+        display: none;
+        align-items: center;
+        padding: 0 20px;
+        gap: 2px;
+        border-top: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.25);
+        flex-shrink: 0;
+      }
+      .wbar {
+        flex: 1;
+        border-radius: 2px;
+        background: var(--blue);
+        opacity: 0.5;
+        min-height: 2px;
+        transition: height 0.1s ease;
+      }
+
+      #txPane {
+        flex: 1;
         display: flex;
         flex-direction: column;
         overflow: hidden;
       }
-      #graphCanvas {
+      .tx-scroll {
         flex: 1;
-        min-height: 0;
-        position: relative;
-        overflow: hidden;
-        background: radial-gradient(circle at center, #1e293b 0%, #0b0f19 100%);
-      }
-
-      #transcriptPanel {
-        flex: 1.5;
-        min-height: 0;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      .transcript-container {
-        flex: 1;
-        min-height: 0;
-        padding: 20px;
         overflow-y: auto;
+        padding: 16px 20px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        background: rgba(0, 0, 0, 0.2);
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
       }
-
-      .msg {
-        padding: 12px 16px;
-        border-radius: 12px;
-        font-size: 13px;
-        line-height: 1.5;
-        max-width: 85%;
-        font-family: "Inter", sans-serif;
+      .tx-scroll::-webkit-scrollbar {
+        width: 3px;
       }
-      .msg-agent {
-        align-self: flex-start;
-        background: rgba(56, 189, 248, 0.1);
-        color: #bae6fd;
-        border-bottom-left-radius: 2px;
-        border: 1px solid rgba(56, 189, 248, 0.2);
+      .tx-scroll::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
       }
-      .msg-user {
-        align-self: flex-end;
-        background: rgba(255, 255, 255, 0.05);
-        color: #f8fafc;
-        border-bottom-right-radius: 2px;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-      }
-      .role-badge {
-        font-weight: 800;
-        font-size: 10px;
-        opacity: 0.6;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-        display: block;
-        letter-spacing: 1px;
-      }
-
-      /* Live Dossier Panel */
-      .right-panel {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      .dossier-content {
-        padding: 20px;
-        overflow-y: auto;
+      .empty-state {
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: var(--text-4);
       }
-      .report-section {
-        background: rgba(0, 0, 0, 0.3);
-        padding: 16px;
-        border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        font-size: 12px;
-        color: #cbd5e1;
-        white-space: pre-wrap;
-        line-height: 1.6;
-        font-family: "Fira Code", monospace;
+      .empty-icon {
+        font-size: 24px;
       }
-      .report-section.active-glow {
-        border-color: rgba(52, 211, 153, 0.4);
-        box-shadow: inset 0 0 20px rgba(52, 211, 153, 0.05);
-      }
-      .report-title {
+      .empty-label {
         font-size: 11px;
-        color: #94a3b8;
-        font-weight: 800;
+        font-weight: 400;
+        letter-spacing: 0.05em;
+      }
+      .msg {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        animation: msg-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      @keyframes msg-in {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .msg-tag {
+        font-size: 10px;
+        font-weight: 500;
+        padding: 2px 8px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        margin-top: 1px;
+        letter-spacing: 0.03em;
+      }
+      .msg-agent .msg-tag {
+        background: var(--blue-subtle);
+        color: var(--blue);
+        border: 1px solid rgba(10, 132, 255, 0.2);
+      }
+      .msg-user .msg-tag {
+        background: var(--surface-2);
+        color: var(--text-3);
+        border: 1px solid var(--border);
+      }
+      .msg-system .msg-tag {
+        background: rgba(255, 159, 10, 0.08);
+        color: var(--orange);
+        border: 1px solid rgba(255, 159, 10, 0.2);
+      }
+      .msg-body {
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 1.55;
+        color: var(--text-2);
+        padding-top: 2px;
+      }
+      .msg-agent .msg-body {
+        color: var(--text-1);
+      }
+      .msg-system .msg-body {
+        color: var(--orange);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      /* ── RIGHT DOSSIER ── */
+      .dossier-pane {
+        background: rgba(0, 0, 0, 0.2);
+      }
+      .cog-block {
+        padding: 16px 18px 14px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .cog-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        margin-bottom: 6px;
+      }
+      #aiMode {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        color: var(--text-1);
+        line-height: 1.1;
+        transition: color 0.4s;
+      }
+      #aiMode.red {
+        color: var(--red);
+      }
+      #aiMode.blue {
+        color: var(--blue);
+      }
+      #aiMode.green {
+        color: var(--green);
+      }
+      #aiMode.amber {
+        color: var(--orange);
+      }
+      .churn-row {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 10px;
+        margin-top: 12px;
       }
-      .live-dot {
-        height: 6px;
-        width: 6px;
-        background: #ef4444;
-        border-radius: 50%;
-        display: inline-block;
-        animation: blink 1s infinite;
+      .churn-label {
+        font-size: 10px;
+        color: var(--text-3);
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .churn-track {
+        flex: 1;
+        height: 2px;
+        background: var(--surface-3);
+        border-radius: 2px;
+        overflow: hidden;
+      }
+      .churn-fill {
+        height: 100%;
+        width: 0%;
+        border-radius: 2px;
+        background: var(--green);
+        transition:
+          width 0.7s cubic-bezier(0.4, 0, 0.2, 1),
+          background 0.5s;
+      }
+      #churnVal {
+        font-family: var(--mono);
+        font-size: 16px;
+        font-weight: 400;
+        color: var(--text-1);
+        min-width: 40px;
+        text-align: right;
       }
 
-      @keyframes pulse-purple {
-        0% {
-          box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.3);
-        }
-        70% {
-          box-shadow: 0 0 0 10px rgba(139, 92, 246, 0);
-        }
-        100% {
-          box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
-        }
+      .dos-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        scrollbar-width: none;
       }
-      @keyframes blink {
-        0%,
-        100% {
-          opacity: 1;
-        }
-        50% {
-          opacity: 0.3;
-        }
+      .dos-scroll::-webkit-scrollbar {
+        display: none;
       }
 
-      ::-webkit-scrollbar {
-        width: 6px;
+      /* CARDS */
+      .card {
+        background: var(--surface-1);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: border-color 0.3s;
       }
-      ::-webkit-scrollbar-track {
-        background: transparent;
+      .card.active {
+        border-color: rgba(10, 132, 255, 0.25);
       }
-      ::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
+      .card.done {
+        border-color: rgba(48, 209, 88, 0.2);
+      }
+      .card.flagged {
+        border-color: rgba(255, 69, 58, 0.25);
+      }
+      .card-head {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: rgba(0, 0, 0, 0.2);
+      }
+      .card-title {
+        font-size: 10px;
+        font-weight: 500;
+        color: var(--text-3);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .pill {
+        font-size: 9px;
+        font-weight: 500;
+        padding: 2px 8px;
         border-radius: 10px;
+        letter-spacing: 0.04em;
+      }
+      .pill-wait {
+        background: var(--surface-3);
+        color: var(--text-3);
+      }
+      .pill-live {
+        background: var(--red-subtle);
+        color: var(--red);
+        border: 1px solid rgba(255, 69, 58, 0.2);
+      }
+      .pill-done {
+        background: var(--green-subtle);
+        color: var(--green);
+        border: 1px solid rgba(48, 209, 88, 0.2);
+      }
+      .pill-warn {
+        background: rgba(255, 159, 10, 0.1);
+        color: var(--orange);
+        border: 1px solid rgba(255, 159, 10, 0.25);
+      }
+      .card-body {
+        padding: 12px 14px;
+        font-size: 11px;
+        font-weight: 400;
+        color: var(--text-2);
+        line-height: 1.7;
+        white-space: pre-wrap;
+        font-family: var(--mono);
+        min-height: 52px;
+      }
+
+      /* ARBITER VERDICT LAYOUT */
+      .verdict-block {
+        padding: 12px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+      }
+      .verdict-summary {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--text-2);
+        line-height: 1.6;
+        margin-bottom: 4px;
+      }
+      .verdict-row {
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: 400;
+        line-height: 1.5;
+      }
+      .verdict-advocate {
+        background: rgba(48, 209, 88, 0.06);
+        color: var(--green);
+        border: 1px solid rgba(48, 209, 88, 0.15);
+      }
+      .verdict-skeptic {
+        background: rgba(255, 69, 58, 0.06);
+        color: var(--red);
+        border: 1px solid rgba(255, 69, 58, 0.15);
+      }
+      .verdict-arbiter {
+        background: rgba(10, 132, 255, 0.06);
+        color: var(--blue);
+        border: 1px solid rgba(10, 132, 255, 0.15);
+      }
+      .verdict-tag {
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        opacity: 0.7;
+        margin-bottom: 3px;
+        display: block;
+      }
+
+      /* CONTRADICTION ROWS */
+      .contra-item {
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: rgba(255, 69, 58, 0.05);
+        border: 1px solid rgba(255, 69, 58, 0.15);
+        font-size: 10px;
+        font-family: var(--mono);
+        color: var(--text-2);
+        line-height: 1.5;
+      }
+      .contra-item + .contra-item {
+        margin-top: 6px;
+      }
+
+      /* CAPTURE GRID */
+      .cap-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+      }
+      .cap-cell {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 8px 12px;
+        font-size: 10px;
+        font-weight: 400;
+        color: var(--text-3);
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      .cap-cell::before {
+        content: "○";
+        font-size: 9px;
+        color: var(--text-4);
+      }
+      .cap-cell.ok {
+        background: rgba(48, 209, 88, 0.04);
+        color: var(--text-1);
+      }
+      .cap-cell.ok::before {
+        content: "✓";
+        color: var(--green);
+      }
+      .cap-cell.validation {
+        font-style: italic;
+        opacity: 0.7;
       }
     </style>
   </head>
   <body>
-    <div class="glass-panel sidebar">
-      <div>
-        <h1>SPECTER</h1>
-        <div
-          style="
-            font-size: 11px;
-            color: #64748b;
-            letter-spacing: 3px;
-            font-weight: 600;
-            margin-top: 4px;
-          "
-        >
-          NEXUS COMMAND
+    <div class="app">
+      <!-- ═══ TITLEBAR ═══════════════════════════════════ -->
+      <header class="titlebar">
+        <div class="brand">
+          <div class="brand-name">SPECTER</div>
+          <div class="brand-sub">Clinical Intelligence Platform</div>
         </div>
-      </div>
+        <div class="tb-div"></div>
+        <div class="tb-meta">Medication Refill Protocol · TrimRX</div>
+        <div class="tb-right">
+          <div id="sysClock"></div>
+          <div class="tb-div"></div>
+          <div id="sessB" class="status-badge">
+            <div class="badge-dot"></div>
+            <span id="sessLabel">Idle</span>
+          </div>
+        </div>
+      </header>
 
-      <div>
-        <label>Patient Name</label
-        ><input type="text" id="patientName" value="Elena Vance" />
-      </div>
-      <div>
-        <label>Medication Target</label
-        ><input type="text" id="medication" value="Semaglutide, 1.0mg" />
-      </div>
-      <div>
-        <label>EHR Context Injection</label>
-        <textarea id="patientContext">
+      <!-- ═══ WORKSPACE ════════════════════════════════════ -->
+      <div class="grid">
+        <!-- ── LEFT ── -->
+        <aside class="pane cmd-pane">
+          <div class="pane-header">
+            <span class="pane-title">Configuration</span>
+          </div>
+          <div class="cmd-scroll">
+            <div class="field">
+              <div class="field-label">Patient ID</div>
+              <input
+                class="field-input"
+                id="patientName"
+                type="text"
+                value="Elena Vance"
+              />
+            </div>
+            <div class="field">
+              <div class="field-label">Medication</div>
+              <input
+                class="field-input"
+                id="medication"
+                type="text"
+                value="Semaglutide, 1.0mg"
+              />
+            </div>
+            <div class="field">
+              <div class="field-label">EHR Context</div>
+              <textarea class="field-input" id="patientContext">
 Target weight: 150 lbs. Prone to anxiety regarding weight loss plateaus.</textarea
-        >
-      </div>
-
-      <button class="btn-start" onclick="startCall()">
-        ▶ INITIATE AI TRIAGE
-      </button>
-      <div id="callStatus" class="status-indicator">SYSTEM IDLE</div>
-
-      <button class="btn-end" onclick="endCall()">■ FORCE END CALL</button>
-      <button id="downloadBtn" class="btn-download" onclick="downloadJSON()">
-        ⬇ EXPORT STRICT JSON
-      </button>
-    </div>
-
-    <div class="center-col">
-      <div class="glass-panel" id="graphPanel">
-        <h2>Live Knowledge Graph</h2>
-        <div id="graphCanvas"></div>
-      </div>
-
-      <div class="glass-panel" id="transcriptPanel">
-        <h2>
-          Live Audio Intercept
-          <button
-            id="toggleBtn"
-            class="btn-toggle"
-            onclick="toggleTranscript()"
-          >
-            ↕ MAXIMIZE
-          </button>
-        </h2>
-        <div id="transcriptBox" class="transcript-container">
-          <div
-            style="
-              text-align: center;
-              color: #64748b;
-              font-size: 12px;
-              margin-top: 20px;
-            "
-          >
-            Awaiting secure audio stream...
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="glass-panel right-panel">
-      <div class="ai-state-panel">
-        <div
-          style="
-            font-size: 10px;
-            color: #94a3b8;
-            font-weight: 800;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-          "
-        >
-          AI COGNITIVE STATE
-        </div>
-        <div id="aiModeText" class="ai-mode-text">STANDBY</div>
-
-        <div class="prediction-box">
-          <div style="text-align: left">
-            <div
-              style="
-                font-size: 9px;
-                color: #94a3b8;
-                font-weight: 800;
-                letter-spacing: 1px;
-              "
-            >
-              PREDICTED CHURN
+              >
             </div>
-            <div
-              id="churnValue"
-              style="
-                font-size: 18px;
-                font-weight: 800;
-                color: #f8fafc;
-                margin-top: 2px;
-              "
+
+            <button class="btn btn-primary" onclick="startCall()">
+              Begin Triage Call
+            </button>
+            <button class="btn btn-danger" onclick="endCall()">
+              Force End Call
+            </button>
+            <button
+              class="btn btn-success"
+              id="exportBtn"
+              onclick="downloadJSON()"
             >
-              --%
+              Export JSON Dossier
+            </button>
+
+            <div class="sep"></div>
+
+            <!-- SIGNAL SCORE -->
+            <div class="signal-block">
+              <div class="signal-row">
+                <div class="signal-label">Signal Score</div>
+                <div class="signal-val" id="signalVal">0</div>
+              </div>
+              <div class="signal-row">
+                <div class="signal-label">Interview Depth</div>
+                <div class="depth-badge" id="depthBadge">Standby</div>
+              </div>
+            </div>
+
+            <div class="sep"></div>
+
+            <!-- PROBE ARRAY -->
+            <div>
+              <div class="section-label">Probe Array</div>
+              <div class="probe-list" id="probeList"></div>
             </div>
           </div>
-          <div class="churn-meter-container">
-            <div
-              id="churnMeter"
-              class="churn-meter"
-              style="width: 0%; background: #334155"
-            ></div>
-          </div>
-        </div>
-      </div>
+        </aside>
 
-      <h2>
-        <span class="live-dot" id="dossierDot" style="display: none"></span>
-        Live Analytics Dossier
-      </h2>
-      <div class="dossier-content">
-        <div>
-          <div class="report-title">1. Behavioral Profile</div>
-          <div id="behaviorBox" class="report-section active-glow">
-            Awaiting data synthesis...
+        <!-- ── CENTER ── -->
+        <div class="pane center-pane">
+          <!-- RADAR -->
+          <div id="radarPane">
+            <div class="pane-header">
+              <span class="pane-title">Behavioral Radar</span>
+              <div class="live-dot" id="rdDot"></div>
+            </div>
+            <div id="radarCanvas">
+              <svg
+                id="radarSvg"
+                viewBox="0 0 520 270"
+                preserveAspectRatio="xMidYMid meet"
+              ></svg>
+            </div>
+            <div id="waveWrap"></div>
+          </div>
+
+          <!-- TRANSCRIPT -->
+          <div class="pane" id="txPane" style="border-right: none">
+            <div class="pane-header">
+              <span class="pane-title">Live Transcript</span>
+              <div class="live-dot" id="txDot"></div>
+            </div>
+            <div class="tx-scroll" id="txScroll">
+              <div class="empty-state" id="emptyTx">
+                <div class="empty-icon">◎</div>
+                <div class="empty-label">Awaiting audio stream</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div>
-          <div class="report-title">2. Edge Case & Strategy Audit</div>
-          <div
-            id="auditBox"
-            class="report-section"
-            style="border-color: rgba(245, 158, 11, 0.3)"
-          >
-            Awaiting telemetry...
+        <!-- ── RIGHT ── -->
+        <aside class="pane dossier-pane">
+          <div class="pane-header">
+            <span class="pane-title">Analytics Dossier</span>
+            <div class="live-dot" id="dDot"></div>
           </div>
-        </div>
 
-        <div>
-          <div class="report-title">3. Automated SOAP Note</div>
-          <div
-            id="soapNoteBox"
-            class="report-section"
-            style="border-color: rgba(56, 189, 248, 0.3)"
-          >
-            Connecting to EHR...
+          <!-- COG STATE -->
+          <div class="cog-block">
+            <div class="cog-label">AI State</div>
+            <div id="aiMode">Standby</div>
+            <div class="churn-row">
+              <div class="churn-label">Churn</div>
+              <div class="churn-track">
+                <div class="churn-fill" id="churnFill"></div>
+              </div>
+              <div id="churnVal">—</div>
+            </div>
           </div>
-        </div>
+
+          <div class="dos-scroll">
+            <!-- CAPTURE -->
+            <div class="card" id="capCard">
+              <div class="card-head">
+                <span class="card-title">Response Capture</span>
+                <span class="pill pill-wait" id="capPill">0 / 10</span>
+              </div>
+              <div class="cap-grid" id="capGrid"></div>
+            </div>
+
+            <!-- CONTRADICTIONS (hidden until detected) -->
+            <div class="card flagged hidden" id="contraCard">
+              <div class="card-head">
+                <span class="card-title">Contradictions Detected</span>
+                <span class="pill pill-live" id="contraPill">0</span>
+              </div>
+              <div style="padding: 12px 14px" id="contraBody"></div>
+            </div>
+
+            <!-- BEHAVIORAL PROFILE + ARBITER -->
+            <div class="card" id="bpCard">
+              <div class="card-head">
+                <span class="card-title">Behavioral Profile</span>
+                <span class="pill pill-wait" id="bpPill">Pending</span>
+              </div>
+              <div id="bpBox">
+                <div class="card-body">Awaiting synthesis…</div>
+              </div>
+            </div>
+
+            <!-- EDGE CASE AUDIT -->
+            <div class="card" id="ecCard">
+              <div class="card-head">
+                <span class="card-title">Edge Case Audit</span>
+                <span class="pill pill-wait" id="ecPill">Pending</span>
+              </div>
+              <div class="card-body" id="ecBox">Awaiting telemetry…</div>
+            </div>
+
+            <!-- SOAP NOTE -->
+            <div class="card" id="soapCard">
+              <div class="card-head">
+                <span class="card-title">SOAP Note</span>
+                <span class="pill pill-wait" id="soapPill">Pending</span>
+              </div>
+              <div class="card-body" id="soapBox">Connecting to EHR…</div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
+    <!-- /app -->
 
     <script>
-      let currentCallState = null;
-      let graphSimulation, svg, linkContainer, nodeContainer, textContainer;
-      let isTranscriptMaximized = false;
-      let hasTriggeredLLMLoading = false;
+      // ══════════════════════════════════════════════
+      // CONSTANTS
+      // ══════════════════════════════════════════════
+      const QLABELS = [
+        "Overall",
+        "Weight",
+        "Weight Loss",
+        "Side Effects",
+        "Satisfaction",
+        "New Meds",
+        "Allergies",
+        "Surgeries",
+        "Dr. Questions",
+        "Address",
+        "Target Gap",
+        "Supply Days",
+        "Adherence",
+        "Change Ask",
+        "Pharmacy",
+      ];
+      const PKEYS = [
+        "A_acoustic_fidelity",
+        "B_intent_alignment",
+        "C_coverage_integrity",
+        "D_safety_compliance",
+        "E_identity_signal",
+        "F_capture_accuracy",
+        "G_behavioral_signal",
+      ];
+      const PNAMES = {
+        A_acoustic_fidelity: "Acoustic",
+        B_intent_alignment: "Intent",
+        C_coverage_integrity: "Coverage",
+        D_safety_compliance: "Safety",
+        E_identity_signal: "Identity",
+        F_capture_accuracy: "Capture",
+        G_behavioral_signal: "Behavioral",
+      };
+      const SLABELS = [
+        "Acoustic",
+        "Intent",
+        "Coverage",
+        "Safety",
+        "Identity",
+        "Capture",
+        "Behavioral",
+      ];
 
-      function toggleTranscript() {
-        const graphPanel = document.getElementById("graphPanel");
-        const btn = document.getElementById("toggleBtn");
-        if (!isTranscriptMaximized) {
-          graphPanel.style.display = "none";
-          btn.textContent = "↕ RESTORE";
-          isTranscriptMaximized = true;
+      let currentState = null,
+        waveIv = null,
+        lastTxLen = 0;
+      let bpRendered = false;
+
+      // ══════════════════════════════════════════════
+      // CLOCK
+      // ══════════════════════════════════════════════
+      function tick() {
+        document.getElementById("sysClock").textContent =
+          new Date().toLocaleTimeString("en-US", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }) + " UTC";
+      }
+      setInterval(tick, 1000);
+      tick();
+
+      // ══════════════════════════════════════════════
+      // PROBE LIST
+      // ══════════════════════════════════════════════
+      function buildProbeList() {
+        document.getElementById("probeList").innerHTML = PKEYS.map(
+          (k) => `
+    <div class="probe-item">
+      <div class="probe-name">${PNAMES[k]}</div>
+      <div class="probe-track"><div class="probe-fill" id="pf_${k}"></div></div>
+      <div class="probe-score" id="ps_${k}">1.0</div>
+    </div>`,
+        ).join("");
+      }
+      buildProbeList();
+
+      function updateProbes(p) {
+        if (!p) return;
+        PKEYS.forEach((k) => {
+          const s = p[k] !== undefined ? p[k] : 1.0;
+          const pf = document.getElementById("pf_" + k);
+          const ps = document.getElementById("ps_" + k);
+          if (!pf) return;
+          pf.style.width = Math.round(s * 100) + "%";
+          const col =
+            s > 0.7
+              ? "var(--green)"
+              : s > 0.35
+                ? "var(--orange)"
+                : "var(--red)";
+          pf.style.background = col;
+          ps.textContent = s.toFixed(1);
+          ps.style.color = col;
+        });
+      }
+
+      // ══════════════════════════════════════════════
+      // SIGNAL SCORE + DEPTH BADGE
+      // ══════════════════════════════════════════════
+      function updateSignal(score, depth) {
+        document.getElementById("signalVal").textContent = score || 0;
+        const badge = document.getElementById("depthBadge");
+        if (!depth || depth === "standard") {
+          badge.textContent = "Standard";
+          badge.className = "depth-badge standard";
+        } else if (depth === "soft_probe") {
+          badge.textContent = "Soft Probe";
+          badge.className = "depth-badge soft";
+        } else if (depth === "deep_probe") {
+          badge.textContent = "Deep Probe";
+          badge.className = "depth-badge deep";
         } else {
-          graphPanel.style.display = "flex";
-          btn.textContent = "↕ MAXIMIZE";
-          isTranscriptMaximized = false;
-          setTimeout(initGraph, 50);
+          badge.textContent = depth;
+          badge.className = "depth-badge";
         }
       }
 
-      function initGraph() {
-        const container = document.getElementById("graphCanvas");
-        if (!container) return;
-        d3.select("#graphCanvas").selectAll("svg").remove();
+      // ══════════════════════════════════════════════
+      // CAPTURE GRID
+      // ══════════════════════════════════════════════
+      function updateCapGrid(responses) {
+        const g = document.getElementById("capGrid");
+        const pill = document.getElementById("capPill");
+        const card = document.getElementById("capCard");
+        if (!responses || !responses.length) {
+          g.innerHTML = "";
+          return;
+        }
 
-        setTimeout(() => {
-          const width = container.clientWidth;
-          const height = container.clientHeight;
-          if (width === 0 || height === 0) return;
+        g.innerHTML = responses
+          .map((r, i) => {
+            const ok = r.answer && r.answer.trim();
+            const isV = i >= 10; // validation probes
+            return `<div class="cap-cell ${ok ? "ok" : ""} ${isV ? "validation" : ""}">
+      ${isV ? "⟳ " : ""}${QLABELS[i] || "Q" + (i + 1)}
+    </div>`;
+          })
+          .join("");
 
-          svg = d3
-            .select("#graphCanvas")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height);
+        // Count only primary 10
+        const primary = responses.slice(0, 10);
+        const c = primary.filter((r) => r.answer && r.answer.trim()).length;
+        pill.textContent = c + " / 10";
+        pill.className =
+          "pill " +
+          (c === 10 ? "pill-done" : c > 0 ? "pill-live" : "pill-wait");
+        card.className = "card " + (c === 10 ? "done" : c > 0 ? "active" : "");
+      }
 
+      // ══════════════════════════════════════════════
+      // CONTRADICTION CARD
+      // ══════════════════════════════════════════════
+      function updateContradictions(contradictions) {
+        const card = document.getElementById("contraCard");
+        const body = document.getElementById("contraBody");
+        const pill = document.getElementById("contraPill");
+        if (!contradictions || contradictions.length === 0) {
+          card.classList.add("hidden");
+          return;
+        }
+        card.classList.remove("hidden");
+        pill.textContent =
+          contradictions.length +
+          " FLAG" +
+          (contradictions.length > 1 ? "S" : "");
+        body.innerHTML = contradictions
+          .map(
+            (c) => `
+    <div class="contra-item">
+      <strong style="color:var(--red);font-size:9px;letter-spacing:0.05em;">
+        ${c.field_a.toUpperCase()} ↔ ${c.field_b.toUpperCase()}
+      </strong><br/>
+      ${c.summary}
+    </div>`,
+          )
+          .join("");
+      }
+
+      // ══════════════════════════════════════════════
+      // RADAR
+      // ══════════════════════════════════════════════
+      function drawRadar(probes) {
+        const svg = d3.select("#radarSvg");
+        svg.selectAll("*").remove();
+        const W = 520,
+          H = 270,
+          cx = W / 2,
+          cy = H / 2 + 8;
+        const R = Math.min(W, H) / 2 - 52;
+        const N = 7;
+        const vals = PKEYS.map((k) =>
+          probes ? (probes[k] !== undefined ? probes[k] : 1.0) : 1.0,
+        );
+        const angles = d3
+          .range(N)
+          .map((i) => (Math.PI * 2 * i) / N - Math.PI / 2);
+        const pt = (v, i) => ({
+          x: cx + R * v * Math.cos(angles[i]),
+          y: cy + R * v * Math.sin(angles[i]),
+        });
+
+        // Grid rings
+        [0.25, 0.5, 0.75, 1.0].forEach((r, ri) => {
           svg
-            .append("defs")
-            .append("marker")
-            .attr("id", "arrow")
-            .attr("viewBox", "0 -5 10 10")
-            .attr("refX", 18)
-            .attr("refY", 0)
-            .attr("markerWidth", 5)
-            .attr("markerHeight", 5)
-            .attr("orient", "auto")
-            .append("path")
-            .attr("d", "M0,-5L10,0L0,5")
-            .attr("fill", "rgba(255,255,255,0.2)");
-
-          linkContainer = svg.append("g").attr("class", "links");
-          nodeContainer = svg.append("g").attr("class", "nodes");
-          textContainer = svg.append("g").attr("class", "texts");
-
-          graphSimulation = d3
-            .forceSimulation()
-            .force(
-              "link",
-              d3
-                .forceLink()
-                .id((d) => d.id)
-                .distance(100),
+            .append("polygon")
+            .attr(
+              "points",
+              angles
+                .map((a) =>
+                  [cx + R * r * Math.cos(a), cy + R * r * Math.sin(a)].join(
+                    ",",
+                  ),
+                )
+                .join(" "),
             )
-            .force("charge", d3.forceManyBody().strength(-200))
-            .force("center", d3.forceCenter(width / 2, height / 2));
+            .attr("fill", "none")
+            .attr(
+              "stroke",
+              ri === 3 ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.04)",
+            )
+            .attr("stroke-width", 1);
+        });
+
+        // Spokes
+        angles.forEach((a) => {
+          svg
+            .append("line")
+            .attr("x1", cx)
+            .attr("y1", cy)
+            .attr("x2", cx + R * Math.cos(a))
+            .attr("y2", cy + R * Math.sin(a))
+            .attr("stroke", "rgba(255,255,255,0.05)")
+            .attr("stroke-width", 1);
+        });
+
+        // Labels
+        angles.forEach((a, i) => {
+          const lx = cx + (R + 30) * Math.cos(a),
+            ly = cy + (R + 30) * Math.sin(a);
+          const s = vals[i];
+          const col =
+            s > 0.7
+              ? "rgba(48,209,88,0.8)"
+              : s > 0.35
+                ? "rgba(255,159,10,0.8)"
+                : "rgba(255,69,58,0.8)";
+          svg
+            .append("text")
+            .attr("x", lx)
+            .attr("y", ly)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("font-family", "DM Sans, system-ui")
+            .attr("font-size", 9.5)
+            .attr("font-weight", 500)
+            .attr("fill", col)
+            .attr("letter-spacing", 0.5)
+            .text(SLABELS[i]);
+        });
+
+        // Percentage labels inside for degraded spokes
+        vals.forEach((v, i) => {
+          if (v < 0.95) {
+            const ip = pt(v * 0.65, i);
+            svg
+              .append("text")
+              .attr("x", ip.x)
+              .attr("y", ip.y)
+              .attr("text-anchor", "middle")
+              .attr("dominant-baseline", "middle")
+              .attr("font-family", "DM Mono, monospace")
+              .attr("font-size", 7.5)
+              .attr("fill", "rgba(255,255,255,0.3)")
+              .text(Math.round(v * 100) + "%");
+          }
+        });
+
+        // Glow filter
+        const defs = svg.append("defs");
+        const filt = defs.append("filter").attr("id", "glow");
+        filt
+          .append("feGaussianBlur")
+          .attr("stdDeviation", 3)
+          .attr("result", "blur");
+        filt
+          .append("feMerge")
+          .selectAll("feMergeNode")
+          .data(["blur", "SourceGraphic"])
+          .join("feMergeNode")
+          .attr("in", (d) => d);
+
+        // Fill polygon
+        const dpts = vals.map((v, i) => pt(v, i));
+        svg
+          .append("polygon")
+          .attr("points", dpts.map((p) => `${p.x},${p.y}`).join(" "))
+          .attr("fill", "rgba(10,132,255,0.07)")
+          .attr("stroke", "rgba(10,132,255,0.5)")
+          .attr("stroke-width", 1.5)
+          .attr("stroke-linejoin", "round")
+          .attr("filter", "url(#glow)");
+
+        // Vertex dots
+        dpts.forEach((p, i) => {
+          const s = vals[i];
+          const col = s > 0.7 ? "#30d158" : s > 0.35 ? "#ff9f0a" : "#ff453a";
+          svg
+            .append("circle")
+            .attr("cx", p.x)
+            .attr("cy", p.y)
+            .attr("r", 3.5)
+            .attr("fill", col)
+            .attr("stroke", "#000")
+            .attr("stroke-width", 1.5)
+            .attr("filter", "url(#glow)");
+        });
+
+        // Center
+        svg
+          .append("circle")
+          .attr("cx", cx)
+          .attr("cy", cy)
+          .attr("r", 3)
+          .attr("fill", "rgba(10,132,255,0.5)");
+      }
+      drawRadar(null);
+
+      // ══════════════════════════════════════════════
+      // WAVEFORM
+      // ══════════════════════════════════════════════
+      function startWave() {
+        const w = document.getElementById("waveWrap");
+        w.style.display = "flex";
+        w.innerHTML = "";
+        for (let i = 0; i < 64; i++) {
+          const b = document.createElement("div");
+          b.className = "wbar";
+          b.style.height = "2px";
+          w.appendChild(b);
+        }
+        const bars = w.querySelectorAll(".wbar");
+        waveIv = setInterval(() => {
+          bars.forEach((b) => {
+            const h = Math.random() * 34 + 2;
+            b.style.height = h + "px";
+            b.style.opacity = (0.3 + Math.random() * 0.5).toString();
+          });
         }, 100);
       }
-
-      function updateGraph(graphData) {
-        if (!graphData || !graphData.nodes.length || !svg) return;
-
-        const nodes = graphData.nodes.map((d) => Object.create(d));
-        const links = graphData.links.map((d) => Object.create(d));
-
-        const link = linkContainer
-          .selectAll("line")
-          .data(links)
-          .join("line")
-          .attr("stroke", "rgba(255,255,255,0.15)")
-          .attr("stroke-width", 1.5)
-          .attr("marker-end", "url(#arrow)");
-
-        const node = nodeContainer
-          .selectAll("circle")
-          .data(nodes, (d) => d.id)
-          .join("circle")
-          .attr("r", (d) => (d.group === 1 ? 18 : 8))
-          .attr("fill", (d) =>
-            d.group === 1
-              ? "#38bdf8"
-              : d.group === 2
-                ? "#34d399"
-                : d.group === 3
-                  ? "#fb7185"
-                  : "#94a3b8",
-          )
-          .call(drag(graphSimulation));
-
-        const text = textContainer
-          .selectAll("text")
-          .data(nodes, (d) => d.id)
-          .join("text")
-          .text((d) => d.id)
-          .attr("font-size", "10px")
-          .attr("fill", "#cbd5e1")
-          .attr("font-family", "Inter")
-          .attr("dx", 12)
-          .attr("dy", 3);
-
-        graphSimulation.nodes(nodes).on("tick", () => {
-          link
-            .attr("x1", (d) => d.source.x)
-            .attr("y1", (d) => d.source.y)
-            .attr("x2", (d) => d.target.x)
-            .attr("y2", (d) => d.target.y);
-          node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-          text.attr("x", (d) => d.x).attr("y", (d) => d.y);
+      function stopWave() {
+        if (waveIv) {
+          clearInterval(waveIv);
+          waveIv = null;
+        }
+        document.querySelectorAll(".wbar").forEach((b) => {
+          b.style.height = "2px";
+          b.style.opacity = "0.2";
         });
-        graphSimulation.force("link").links(links);
-        graphSimulation.alpha(1).restart();
+        setTimeout(() => {
+          document.getElementById("waveWrap").style.display = "none";
+        }, 600);
       }
 
-      function drag(simulation) {
-        return d3
-          .drag()
-          .on("start", (event) => {
-            if (!event.active) simulation.alphaTarget(0.3).restart();
-            event.subject.fx = event.subject.x;
-            event.subject.fy = event.subject.y;
-          })
-          .on("drag", (event) => {
-            event.subject.fx = event.x;
-            event.subject.fy = event.y;
-          })
-          .on("end", (event) => {
-            if (!event.active) simulation.alphaTarget(0);
-            event.subject.fx = null;
-            event.subject.fy = null;
-          });
+      // ══════════════════════════════════════════════
+      // TRANSCRIPT
+      // ══════════════════════════════════════════════
+      function renderTx(tx) {
+        const box = document.getElementById("txScroll");
+        const empty = document.getElementById("emptyTx");
+        if (!tx || !tx.length) {
+          if (empty) empty.style.display = "flex";
+          return;
+        }
+        if (empty) empty.style.display = "none";
+        if (tx.length === lastTxLen) return;
+        lastTxLen = tx.length;
+        box.innerHTML = "";
+        tx.forEach((t) => {
+          const d = document.createElement("div");
+          const role =
+            t.role === "agent"
+              ? "agent"
+              : t.role === "system"
+                ? "system"
+                : "user";
+          d.className = "msg msg-" + role;
+          const label =
+            role === "agent"
+              ? "Jessica"
+              : role === "system"
+                ? "System"
+                : "Patient";
+          d.innerHTML = `<div class="msg-tag">${label}</div><div class="msg-body">${t.message}</div>`;
+          box.appendChild(d);
+        });
+        box.scrollTop = box.scrollHeight;
       }
 
-      window.addEventListener("resize", initGraph);
-      initGraph();
+      // ══════════════════════════════════════════════
+      // AI MODE
+      // ══════════════════════════════════════════════
+      function updateAIMode(mode) {
+        const el = document.getElementById("aiMode");
+        if (!mode || el.textContent === mode) return;
+        el.textContent = mode;
+        el.className =
+          mode.includes("EMPATHY") ||
+          mode.includes("DE-ESC") ||
+          mode.includes("ADVISORY") ||
+          mode.includes("DEEP PROBE")
+            ? "red"
+            : mode.includes("SOFT PROBE") || mode.includes("CONTRADICTION")
+              ? "amber"
+              : mode.includes("COVERAGE") ||
+                  mode.includes("SYNTHESIS") ||
+                  mode.includes("COMPLETE")
+                ? "green"
+                : mode.includes("CLINICAL") || mode.includes("STANDARD")
+                  ? "blue"
+                  : "";
+      }
 
+      // ══════════════════════════════════════════════
+      // DOSSIER — CHURN + INSIGHTS
+      // ══════════════════════════════════════════════
+      function updateDossier(s) {
+        updateAIMode(s.agent_behavior_mode);
+
+        if (s.insights && s.insights.churn_score !== undefined) {
+          const c = s.insights.churn_score;
+          document.getElementById("churnVal").textContent = c + "%";
+          const f = document.getElementById("churnFill");
+          f.style.width = c + "%";
+          f.style.background =
+            c > 60 ? "var(--red)" : c > 30 ? "var(--orange)" : "var(--green)";
+        }
+
+        if (!s.insights) return;
+        const ins = s.insights;
+        const isFinal =
+          ins.behavioral_profile &&
+          !ins.behavioral_profile.includes("Synthesizing") &&
+          !ins.behavioral_profile.includes("Awaiting");
+
+        if (isFinal && !bpRendered) {
+          bpRendered = true;
+
+          // ── Behavioral Profile with Arbiter verdicts ──
+          const bpBox = document.getElementById("bpBox");
+          const bpPill = document.getElementById("bpPill");
+          const bpCard = document.getElementById("bpCard");
+
+          const advocate = ins.advocate_summary || "";
+          const skeptic = ins.skeptic_summary || "";
+          const arbiter = ins.arbiter_verdict || "";
+
+          let html = `<div class="verdict-block">`;
+          if (ins.behavioral_profile) {
+            html += `<div class="verdict-summary">${ins.behavioral_profile}</div>`;
+          }
+          if (advocate) {
+            html += `<div class="verdict-row verdict-advocate">
+        <span class="verdict-tag">▲ ADVOCATE</span>${advocate}
+      </div>`;
+          }
+          if (skeptic) {
+            html += `<div class="verdict-row verdict-skeptic">
+        <span class="verdict-tag">▼ SKEPTIC</span>${skeptic}
+      </div>`;
+          }
+          if (arbiter) {
+            html += `<div class="verdict-row verdict-arbiter">
+        <span class="verdict-tag">● ARBITER VERDICT</span>${arbiter}
+      </div>`;
+          }
+          html += `</div>`;
+          bpBox.innerHTML = html;
+          bpPill.textContent = "Complete";
+          bpPill.className = "pill pill-done";
+          bpCard.className = "card done";
+
+          // ── Edge Case ──
+          document.getElementById("ecBox").textContent =
+            ins.edge_case_report || "";
+          document.getElementById("ecPill").textContent = "Complete";
+          document.getElementById("ecPill").className = "pill pill-done";
+          document.getElementById("ecCard").className = "card done";
+
+          // ── SOAP Note ──
+          document.getElementById("soapBox").textContent = ins.soap_note || "";
+          document.getElementById("soapPill").textContent = "Complete";
+          document.getElementById("soapPill").className = "pill pill-done";
+          document.getElementById("soapCard").className = "card done";
+        } else if (s.outcome && !isFinal) {
+          // Processing state
+          if (!bpRendered) {
+            document.getElementById("bpBox").innerHTML =
+              '<div class="card-body"><span style="color:var(--text-3);font-style:italic">Deliberation chamber running…</span></div>';
+            document.getElementById("ecBox").innerHTML =
+              '<span style="color:var(--text-3);font-style:italic">Compiling edge case audit…</span>';
+            document.getElementById("soapBox").innerHTML =
+              '<span style="color:var(--text-3);font-style:italic">Formatting SOAP note…</span>';
+            ["bpPill", "ecPill", "soapPill"].forEach((id) => {
+              const el = document.getElementById(id);
+              el.textContent = "Processing";
+              el.className = "pill pill-live";
+            });
+            ["bpCard", "ecCard", "soapCard"].forEach((id) => {
+              document.getElementById(id).className = "card active";
+            });
+          }
+        }
+
+        // Live edge case — show contradictions before final
+        if (!isFinal && s.contradictions && s.contradictions.length > 0) {
+          document.getElementById("ecBox").textContent = s.contradictions
+            .map((c, i) => `[FLAG ${i + 1}] ${c.summary}`)
+            .join("\n");
+          const ecP = document.getElementById("ecPill");
+          ecP.textContent =
+            s.contradictions.length +
+            " FLAG" +
+            (s.contradictions.length > 1 ? "S" : "");
+          ecP.className = "pill pill-warn";
+          document.getElementById("ecCard").className = "card flagged";
+        }
+      }
+
+      // ══════════════════════════════════════════════
+      // CALL ACTIONS
+      // ══════════════════════════════════════════════
       async function startCall() {
+        lastTxLen = 0;
+        bpRendered = false;
+
         const payload = {
           patient_name: document.getElementById("patientName").value,
           medication: document.getElementById("medication").value,
           patient_context: document.getElementById("patientContext").value,
         };
 
-        document.getElementById("callStatus").textContent =
-          "CALL LIVE - RECORDING";
-        document.getElementById("callStatus").className =
-          "status-indicator status-live";
-        document.getElementById("dossierDot").style.display = "inline-block";
-        document.getElementById("transcriptBox").innerHTML = "";
-        document.getElementById("downloadBtn").style.display = "none";
+        // Session badge
+        const sb = document.getElementById("sessB");
+        sb.className = "status-badge live";
+        document.getElementById("sessLabel").textContent = "Live";
 
-        document.getElementById("aiModeText").textContent = "STANDARD CLINICAL";
-        document.getElementById("aiModeText").style.color = "#38bdf8";
-        document.getElementById("aiModeText").style.textShadow =
-          "0 0 10px rgba(56, 189, 248, 0.5)";
+        // Dots on
+        ["rdDot", "txDot", "dDot"].forEach((id) =>
+          document.getElementById(id).classList.add("on"),
+        );
 
-        document.getElementById("churnValue").textContent = "10%";
-        document.getElementById("churnMeter").style.width = "10%";
-        document.getElementById("churnMeter").style.backgroundColor = "#34d399";
-        document.getElementById("churnMeter").style.boxShadow =
-          "0 0 10px #34d399";
+        // Reset cards
+        ["bp", "ec", "soap"].forEach((id) => {
+          const box = document.getElementById(id + "Box");
+          if (id === "bp") {
+            box.innerHTML = '<div class="card-body">Awaiting synthesis…</div>';
+          } else {
+            box.textContent =
+              id === "soap"
+                ? "Connecting to EHR…"
+                : id === "ec"
+                  ? "Awaiting telemetry…"
+                  : "Awaiting synthesis…";
+          }
+          const p = document.getElementById(id + "Pill");
+          p.textContent = "Pending";
+          p.className = "pill pill-wait";
+          document.getElementById(id + "Card").className = "card";
+        });
 
-        document.getElementById("behaviorBox").textContent =
-          "Awaiting data synthesis...";
-        document.getElementById("auditBox").textContent =
-          "Awaiting telemetry...";
-        document.getElementById("soapNoteBox").textContent =
-          "Connecting to EHR...";
+        // Reset contradiction card
+        document.getElementById("contraCard").classList.add("hidden");
+        document.getElementById("contraBody").innerHTML = "";
 
-        hasTriggeredLLMLoading = false;
+        // Reset other UI
+        document.getElementById("aiMode").textContent = "Standard Clinical";
+        document.getElementById("aiMode").className = "blue";
+        document.getElementById("churnVal").textContent = "—";
+        document.getElementById("churnFill").style.width = "0%";
+        document.getElementById("exportBtn").style.display = "none";
+        updateSignal(0, "standard");
 
-        if (!isTranscriptMaximized) {
-          initGraph();
-        }
+        // Reset transcript
+        const box = document.getElementById("txScroll");
+        box.innerHTML = "";
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.id = "emptyTx";
+        empty.innerHTML =
+          '<div class="empty-icon">◎</div><div class="empty-label">Awaiting audio stream</div>';
+        box.appendChild(empty);
+
+        drawRadar(null);
+        buildProbeList();
+        updateCapGrid(null);
+        startWave();
+
         await fetch("/api/start-call", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -737,147 +1648,58 @@ Target weight: 150 lbs. Prone to anxiety regarding weight loss plateaus.</textar
       }
 
       function downloadJSON() {
-        if (!currentCallState) return;
-        const transcriptString = currentCallState.transcript
-          .map((t) => `[${t.role.toUpperCase()}]: ${t.message}`)
-          .join(" ");
-        const exportFormat = {
-          outcome: currentCallState.outcome || "completed",
-          call_duration: currentCallState.call_duration || 0,
+        if (!currentState) return;
+        const exp = {
+          outcome: currentState.outcome || "completed",
+          call_duration: currentState.call_duration || 0,
           direction: "outbound",
-          transcript: currentCallState.transcript,
-          transcript_text: transcriptString,
-          insights_derived: currentCallState.insights,
-          responses: currentCallState.responses,
+          transcript: currentState.transcript,
+          transcript_text: currentState.transcript
+            .map((t) => `[${t.role.toUpperCase()}]: ${t.message}`)
+            .join(" "),
+          insights_derived: currentState.insights,
+          responses: currentState.responses,
+          signal_score: currentState.signal_score,
+          interview_depth: currentState.interview_depth,
+          contradictions: currentState.contradictions,
+          probes: currentState.probes,
         };
-        const dataStr =
+        const a = document.createElement("a");
+        a.href =
           "data:text/json;charset=utf-8," +
-          encodeURIComponent(JSON.stringify(exportFormat, null, 2));
-        const dlNode = document.createElement("a");
-        dlNode.setAttribute("href", dataStr);
-        dlNode.setAttribute("download", `trimrx_dataset_${Date.now()}.json`);
-        document.body.appendChild(dlNode);
-        dlNode.click();
-        dlNode.remove();
+          encodeURIComponent(JSON.stringify(exp, null, 2));
+        a.download = `specter_${Date.now()}.json`;
+        a.click();
       }
 
-      // --- POLLING LOGIC ---
+      // ══════════════════════════════════════════════
+      // POLL — 800ms
+      // ══════════════════════════════════════════════
       setInterval(async () => {
         try {
-          const res = await fetch("/call-state?t=" + new Date().getTime());
-          const state = await res.json();
-          currentCallState = state;
+          const s = await (await fetch("/call-state?t=" + Date.now())).json();
+          currentState = s;
 
-          // 1. TRANSCRIPT UPDATE
-          if (state.transcript && state.transcript.length > 0) {
-            const tBox = document.getElementById("transcriptBox");
-            const newHTML = state.transcript
-              .map(
-                (t) => `
-                        <div class="msg ${t.role === "agent" ? "msg-agent" : "msg-user"}">
-                            <span class="role-badge">${t.role === "agent" ? "ARIA (AI)" : "PATIENT"}</span>
-                            ${t.message}
-                        </div>`,
-              )
-              .join("");
-            if (tBox.innerHTML !== newHTML) {
-              tBox.innerHTML = newHTML;
-              tBox.scrollTop = tBox.scrollHeight;
-            }
+          renderTx(s.transcript);
+          if (s.probes) {
+            drawRadar(s.probes);
+            updateProbes(s.probes);
           }
+          updateCapGrid(s.responses);
+          updateContradictions(s.contradictions);
+          updateSignal(s.signal_score, s.interview_depth);
+          updateDossier(s);
 
-          // 2. D3 GRAPH UPDATE
-          if (
-            state.graph_data &&
-            !isTranscriptMaximized &&
-            typeof updateGraph === "function"
-          ) {
-            updateGraph(state.graph_data);
-          }
-
-          // LIVE AI PSYCHOLOGY MODE
-          if (state.agent_behavior_mode) {
-            const modeBox = document.getElementById("aiModeText");
-            if (modeBox.textContent !== state.agent_behavior_mode) {
-              modeBox.textContent = state.agent_behavior_mode;
-              if (
-                state.agent_behavior_mode.includes("EMPATHY") ||
-                state.agent_behavior_mode.includes("VALIDATION")
-              ) {
-                modeBox.style.color = "#fca5a5";
-                modeBox.style.textShadow = "0 0 10px rgba(252, 165, 165, 0.5)";
-              } else {
-                modeBox.style.color = "#38bdf8";
-                modeBox.style.textShadow = "0 0 10px rgba(56, 189, 248, 0.5)";
-              }
-            }
-          }
-
-          // 3. CALL ENDED LOGIC
-          if (state.outcome) {
-            document.getElementById("callStatus").textContent =
-              `OUTCOME: ${state.outcome.toUpperCase()}`;
-            document.getElementById("callStatus").className =
-              "status-indicator status-ended";
-            document.getElementById("downloadBtn").style.display = "block";
-            document.getElementById("dossierDot").style.display = "none";
-
-            if (
-              !state.insights ||
-              !state.insights.behavioral_profile ||
-              state.insights.behavioral_profile.includes("Synthesizing")
-            ) {
-              document.getElementById("behaviorBox").innerHTML =
-                "<i><span style='color:#38bdf8'>[SYSTEM]</span> Synthesizing clinical transcript...</i>";
-              document.getElementById("auditBox").innerHTML =
-                "<i><span style='color:#38bdf8'>[SYSTEM]</span> Compiling Edge Case Audit...</i>";
-              document.getElementById("soapNoteBox").innerHTML =
-                "<i><span style='color:#38bdf8'>[SYSTEM]</span> Formatting Final SOAP Note...</i>";
-            }
-          }
-
-          // 4. FINAL LLM INSIGHTS RENDER (WITH FAILSAFE FOR OBJECTS)
-          if (
-            state.insights &&
-            state.insights.behavioral_profile &&
-            !state.insights.behavioral_profile.includes("Synthesizing")
-          ) {
-            // Safe render function just in case LLM tries to return an object again
-            const safeRender = (data) => {
-              if (typeof data === "object" && data !== null) {
-                return Object.entries(data)
-                  .map(([k, v]) => `[${k.toUpperCase()}]\n${v}`)
-                  .join("\n\n");
-              }
-              return data;
-            };
-
-            document.getElementById("behaviorBox").textContent = safeRender(
-              state.insights.behavioral_profile,
+          if (s.outcome) {
+            const sb = document.getElementById("sessB");
+            sb.className = "status-badge ended";
+            document.getElementById("sessLabel").textContent =
+              s.outcome.replace(/_/g, " ");
+            ["rdDot", "txDot", "dDot"].forEach((id) =>
+              document.getElementById(id).classList.remove("on"),
             );
-            document.getElementById("auditBox").textContent = safeRender(
-              state.insights.edge_case_report,
-            );
-            document.getElementById("soapNoteBox").textContent = safeRender(
-              state.insights.soap_note,
-            );
-
-            if (state.insights.churn_score !== undefined) {
-              const churn = state.insights.churn_score;
-              document.getElementById("churnValue").textContent = `${churn}%`;
-              const meter = document.getElementById("churnMeter");
-              meter.style.width = `${churn}%`;
-              if (churn > 60) {
-                meter.style.backgroundColor = "#fb7185";
-                meter.style.boxShadow = "0 0 10px #fb7185";
-              } else if (churn > 30) {
-                meter.style.backgroundColor = "#fbbf24";
-                meter.style.boxShadow = "0 0 10px #fbbf24";
-              } else {
-                meter.style.backgroundColor = "#34d399";
-                meter.style.boxShadow = "0 0 10px #34d399";
-              }
-            }
+            document.getElementById("exportBtn").style.display = "block";
+            stopWave();
           }
         } catch (e) {}
       }, 800);
