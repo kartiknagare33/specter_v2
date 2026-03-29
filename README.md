@@ -48,3 +48,97 @@ The agent, named **Jessica**, conducts natural full-duplex voice conversations u
 ---
 
 ## 🏗️ System Architecture
+
+
+Patient → Voice (WebRTC)
+↓
+ElevenLabs AI Agent (Jessica)
+↓
+FastAPI Backend
+↓
+Signal Processing + Risk Analysis
+↓
+Groq LLM (Deliberation)
+↓
+Clinical Dashboard + Dossier
+
+
+---
+
+## 📁 Project Structure
+
+```bash
+specter-v4/
+├── server/
+│   └── main.py
+├── deliberation/
+│   └── judge.py
+├── demo/
+│   └── index.html
+├── .env
+├── requirements.txt
+└── README.md
+🚀 Quick Start
+1. Clone Repo
+git clone https://github.com/yourusername/specter-v4.git
+cd specter-v4
+2. Setup Environment
+python -m venv venv
+
+# Activate:
+# Windows: venv\Scripts\activate
+# Mac/Linux: source venv/bin/activate
+
+pip install fastapi uvicorn python-dotenv elevenlabs groq
+3. Configure .env
+ELEVENLABS_API_KEY=your_key
+ELEVENLABS_AGENT_ID=your_agent_id
+GROQ_API_KEY=your_key
+4. Run Server
+uvicorn server.main:app --reload --port 8000
+
+Open: http://localhost:8000
+
+🎮 Demo Guide
+Enter sample patient data
+Start call
+Speak naturally
+Observe live dashboard updates
+End call → wait for AI analysis
+📊 Dashboard Highlights
+Real-time transcript
+Behavioral radar (8 probes)
+GLP-1 Risk Matrix
+Multi-answer extraction
+Hesitation fingerprint
+30-day adherence forecast
+SOAP notes + clinical summary
+🔑 Tech Stack
+Voice AI: ElevenLabs
+Backend: FastAPI (Python 3.12)
+LLM: Groq (Llama 3.x)
+Frontend: HTML + JS + D3.js
+📋 Requirements
+Python 3.12+
+ElevenLabs API key
+Groq API key
+Microphone
+🏆 Why SPECTER?
+
+SPECTER is not just a chatbot — it is a clinical intelligence system that:
+
+Thinks like a medical professional
+Validates patient responses
+Detects subtle behavioral signals
+Provides actionable healthcare insights
+📜 License
+
+MIT License
+
+🙌 Team Blitzkrieg
+
+Built for VoiceHack 2026
+
+"Clinical Reasoning, Powered by Voice"
+
+Version: v4 Final | March 2026
