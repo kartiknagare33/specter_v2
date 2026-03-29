@@ -3,1706 +3,2320 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SPECTER · Clinical Intelligence</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@300;400;500&display=swap"
-      rel="stylesheet"
-    />
+    <title>SPECTER — Clinical Intelligence Dashboard v4</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap");
+
       :root {
         --bg: #000000;
-        --surface-1: rgba(255, 255, 255, 0.03);
-        --surface-2: rgba(255, 255, 255, 0.055);
-        --surface-3: rgba(255, 255, 255, 0.08);
-        --border: rgba(255, 255, 255, 0.08);
-        --border-hi: rgba(255, 255, 255, 0.14);
+        --bg1: #0a0a0a;
+        --bg2: #111111;
+        --bg3: #1a1a1a;
+        --border: #222222;
         --blue: #0a84ff;
-        --blue-glow: rgba(10, 132, 255, 0.2);
-        --blue-subtle: rgba(10, 132, 255, 0.08);
         --green: #30d158;
-        --green-subtle: rgba(48, 209, 88, 0.1);
         --orange: #ff9f0a;
         --red: #ff453a;
-        --red-subtle: rgba(255, 69, 58, 0.1);
-        --text-1: rgba(255, 255, 255, 0.92);
-        --text-2: rgba(255, 255, 255, 0.55);
-        --text-3: rgba(255, 255, 255, 0.28);
-        --text-4: rgba(255, 255, 255, 0.14);
-        --radius: 14px;
-        --radius-sm: 8px;
-        --font: "DM Sans", system-ui, sans-serif;
-        --mono: "DM Mono", monospace;
-        --blur: blur(24px) saturate(180%);
+        --purple: #bf5af2;
+        --teal: #5ac8fa;
+        --gold: #ffd60a;
+        --text: #ffffff;
+        --text2: #8e8e93;
+        --text3: #48484a;
+        --card-bg: #0d0d0d;
+        --card-border: #1c1c1e;
       }
-      *,
-      *::before,
-      *::after {
-        box-sizing: border-box;
+
+      * {
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
       }
-      html,
-      body {
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-      }
+
       body {
         background: var(--bg);
-        color: var(--text-1);
-        font-family: var(--font);
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
         font-size: 13px;
         line-height: 1.5;
-        -webkit-font-smoothing: antialiased;
-      }
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        background:
-          radial-gradient(
-            ellipse 80% 50% at 20% 0%,
-            rgba(10, 132, 255, 0.07) 0%,
-            transparent 60%
-          ),
-          radial-gradient(
-            ellipse 60% 40% at 80% 100%,
-            rgba(48, 209, 88, 0.04) 0%,
-            transparent 60%
-          );
-        pointer-events: none;
-        z-index: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
       }
 
-      /* ── APP SHELL ── */
-      .app {
-        position: relative;
-        z-index: 1;
-        display: grid;
-        grid-template-rows: 56px 1fr;
-        height: 100vh;
-      }
-
-      /* ── TITLEBAR ── */
-      .titlebar {
+      /* ── HEADER ── */
+      .header {
         display: flex;
         align-items: center;
-        padding: 0 20px;
-        gap: 0;
+        justify-content: space-between;
+        padding: 14px 24px;
         border-bottom: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: var(--blur);
-        -webkit-backdrop-filter: var(--blur);
+        background: rgba(0, 0, 0, 0.9);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        backdrop-filter: blur(20px);
       }
-      .brand {
-        display: flex;
-        align-items: baseline;
-        gap: 10px;
-      }
-      .brand-name {
-        font-size: 15px;
-        font-weight: 600;
-        letter-spacing: 0.01em;
-        color: var(--text-1);
-      }
-      .brand-sub {
-        font-size: 11px;
-        font-weight: 400;
-        color: var(--text-3);
-        letter-spacing: 0.04em;
-      }
-      .tb-div {
-        width: 1px;
-        height: 20px;
-        background: var(--border);
-        margin: 0 20px;
-      }
-      .tb-meta {
-        font-size: 11px;
-        color: var(--text-3);
-        font-weight: 400;
-      }
-      .tb-right {
-        margin-left: auto;
+      .header-left {
         display: flex;
         align-items: center;
         gap: 12px;
       }
-      #sysClock {
-        font-family: var(--mono);
-        font-size: 11px;
-        font-weight: 300;
-        color: var(--text-3);
+      .logo {
+        font-family: "DM Mono", monospace;
+        font-size: 16px;
+        font-weight: 500;
+        letter-spacing: 4px;
+        color: var(--blue);
       }
-
-      .status-badge {
+      .logo-sub {
+        font-size: 10px;
+        color: var(--text2);
+        letter-spacing: 2px;
+      }
+      .header-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 1px solid;
+        letter-spacing: 1px;
+      }
+      .badge-live {
+        color: var(--red);
+        border-color: var(--red);
+        background: rgba(255, 69, 58, 0.08);
+      }
+      .badge-ready {
+        color: var(--text2);
+        border-color: var(--border);
+      }
+      .badge-done {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.08);
+      }
+      .header-right {
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 5px 11px;
-        border-radius: 20px;
-        border: 1px solid var(--border);
-        background: var(--surface-1);
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--text-3);
-        letter-spacing: 0.02em;
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      .badge-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: var(--text-4);
-        transition: all 0.4s;
-      }
-      .status-badge.live {
-        background: var(--red-subtle);
-        border-color: rgba(255, 69, 58, 0.25);
-        color: var(--red);
-      }
-      .status-badge.live .badge-dot {
-        background: var(--red);
-        box-shadow: 0 0 0 3px rgba(255, 69, 58, 0.2);
-        animation: dot-pulse 1.4s infinite;
-      }
-      .status-badge.ended {
-        background: var(--green-subtle);
-        border-color: rgba(48, 209, 88, 0.25);
-        color: var(--green);
-      }
-      .status-badge.ended .badge-dot {
-        background: var(--green);
-      }
-      @keyframes dot-pulse {
-        0%,
-        100% {
-          box-shadow: 0 0 0 0 rgba(255, 69, 58, 0.3);
-        }
-        50% {
-          box-shadow: 0 0 0 5px rgba(255, 69, 58, 0);
-        }
+        gap: 8px;
       }
 
-      /* ── GRID ── */
-      .grid {
+      /* ── LAYOUT ── */
+      .layout {
         display: grid;
-        grid-template-columns: 270px 1fr 360px;
-        height: 100%;
-        overflow: hidden;
+        grid-template-columns: 280px 1fr 340px;
+        gap: 0;
+        height: calc(100vh - 53px);
       }
-
-      /* ── PANE BASE ── */
-      .pane {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
+      .panel {
+        overflow-y: auto;
+        padding: 16px;
         border-right: 1px solid var(--border);
       }
-      .pane:last-child {
+      .panel:last-child {
         border-right: none;
       }
-      .pane-header {
-        padding: 14px 18px 12px;
-        border-bottom: 1px solid var(--border);
-        flex-shrink: 0;
+
+      /* ── CARD ── */
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .card-title {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 2px;
+        color: var(--text2);
+        text-transform: uppercase;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         justify-content: space-between;
       }
-      .pane-title {
-        font-size: 11px;
-        font-weight: 500;
-        color: var(--text-3);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-      }
-      .live-dot {
+      .card-title-dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
+        background: var(--text3);
+      }
+      .card-title-dot.live {
         background: var(--red);
-        opacity: 0;
-        transition: opacity 0.3s;
-        animation: dot-pulse 1.4s infinite;
+        box-shadow: 0 0 6px var(--red);
+        animation: pulse 1.5s infinite;
       }
-      .live-dot.on {
-        opacity: 1;
+      .card-title-dot.green {
+        background: var(--green);
       }
-
-      /* ── LEFT COMMAND ── */
-      .cmd-pane {
-        background: rgba(0, 0, 0, 0.3);
+      .card-title-dot.blue {
+        background: var(--blue);
       }
-      .cmd-scroll {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        scrollbar-width: none;
+      .card-title-dot.orange {
+        background: var(--orange);
       }
-      .cmd-scroll::-webkit-scrollbar {
-        display: none;
+      .card-title-dot.purple {
+        background: var(--purple);
       }
-      .field {
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+      .card-title-dot.gold {
+        background: var(--gold);
       }
-      .field-label {
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--text-3);
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-      .field-input {
-        background: var(--surface-2);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        color: var(--text-1);
-        padding: 9px 12px;
-        font-family: var(--font);
-        font-size: 13px;
-        width: 100%;
-        transition:
-          border-color 0.2s,
-          background 0.2s;
-        outline: none;
-      }
-      .field-input:focus {
-        border-color: var(--blue);
-        background: var(--blue-subtle);
-      }
-      textarea.field-input {
-        resize: none;
-        height: 72px;
-        line-height: 1.5;
-      }
-      .sep {
-        height: 1px;
-        background: var(--border);
-        margin: 2px 0;
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
       }
 
-      /* BUTTONS */
+      /* ── BUTTONS ── */
       .btn {
-        width: 100%;
-        padding: 11px 16px;
-        border-radius: var(--radius-sm);
+        padding: 9px 16px;
+        border-radius: 8px;
         border: none;
-        font-family: var(--font);
-        font-size: 13px;
-        font-weight: 500;
         cursor: pointer;
-        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-        letter-spacing: 0.01em;
-      }
-      .btn:active {
-        transform: scale(0.98);
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.15s;
+        width: 100%;
+        margin-bottom: 8px;
       }
       .btn-primary {
         background: var(--blue);
         color: #fff;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-      }
-      .btn-primary:hover {
-        background: #1a8fff;
-        box-shadow: 0 2px 12px rgba(10, 132, 255, 0.35);
       }
       .btn-danger {
-        background: transparent;
-        color: var(--red);
-        border: 1px solid rgba(255, 69, 58, 0.25);
+        background: var(--red);
+        color: #fff;
       }
-      .btn-danger:hover {
-        background: var(--red-subtle);
-        border-color: rgba(255, 69, 58, 0.5);
+      .btn-ghost {
+        background: var(--bg3);
+        color: var(--text2);
+        border: 1px solid var(--border);
       }
-      .btn-success {
-        background: var(--green-subtle);
-        color: var(--green);
-        border: 1px solid rgba(48, 209, 88, 0.25);
-        display: none;
+      .btn:hover {
+        opacity: 0.85;
+        transform: translateY(-1px);
       }
-      .btn-success:hover {
-        background: rgba(48, 209, 88, 0.15);
+      .btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        transform: none;
       }
 
-      /* SIGNAL SCORE WIDGET */
-      .signal-block {
-        background: var(--surface-1);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        padding: 12px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+      /* ── FORM FIELDS ── */
+      .field-label {
+        font-size: 10px;
+        color: var(--text2);
+        margin-bottom: 4px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
       }
+      .field-input {
+        width: 100%;
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 8px 10px;
+        color: var(--text);
+        font-family: "DM Sans", sans-serif;
+        font-size: 12px;
+        margin-bottom: 10px;
+        outline: none;
+        transition: border-color 0.15s;
+      }
+      .field-input:focus {
+        border-color: var(--blue);
+      }
+
+      /* ── SIGNAL SCORE ── */
       .signal-row {
         display: flex;
         align-items: center;
         justify-content: space-between;
-      }
-      .signal-label {
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--text-3);
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-      .signal-val {
-        font-family: var(--mono);
-        font-size: 18px;
-        font-weight: 400;
-        color: var(--text-1);
-      }
-      .depth-badge {
-        font-size: 10px;
-        font-weight: 500;
-        padding: 3px 10px;
-        border-radius: 10px;
-        letter-spacing: 0.04em;
-        background: var(--surface-3);
-        color: var(--text-3);
-        border: 1px solid var(--border);
-        transition: all 0.4s;
-      }
-      .depth-badge.soft {
-        background: rgba(255, 159, 10, 0.1);
-        color: var(--orange);
-        border-color: rgba(255, 159, 10, 0.25);
-      }
-      .depth-badge.deep {
-        background: var(--red-subtle);
-        color: var(--red);
-        border-color: rgba(255, 69, 58, 0.25);
-      }
-      .depth-badge.standard {
-        background: var(--blue-subtle);
-        color: var(--blue);
-        border-color: rgba(10, 132, 255, 0.25);
-      }
-
-      /* PROBE ARRAY */
-      .section-label {
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--text-3);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
         margin-bottom: 10px;
       }
-      .probe-list {
-        display: flex;
-        flex-direction: column;
-        gap: 9px;
+      .signal-score-num {
+        font-family: "DM Mono", monospace;
+        font-size: 32px;
+        font-weight: 500;
+        line-height: 1;
       }
-      .probe-item {
+      .depth-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 4px 10px;
+        border-radius: 20px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        border: 1px solid;
+      }
+      .depth-standard {
+        color: var(--blue);
+        border-color: var(--blue);
+        background: rgba(10, 132, 255, 0.1);
+      }
+      .depth-soft {
+        color: var(--orange);
+        border-color: var(--orange);
+        background: rgba(255, 159, 10, 0.1);
+      }
+      .depth-deep {
+        color: var(--red);
+        border-color: var(--red);
+        background: rgba(255, 69, 58, 0.1);
+      }
+
+      /* ── PROBE BARS ── */
+      .probe-row {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
+        margin-bottom: 7px;
       }
-      .probe-name {
+      .probe-label {
+        font-family: "DM Mono", monospace;
         font-size: 10px;
-        font-weight: 500;
-        color: var(--text-3);
-        width: 68px;
+        color: var(--text2);
+        width: 64px;
         flex-shrink: 0;
       }
       .probe-track {
         flex: 1;
-        height: 2px;
-        background: var(--surface-3);
+        height: 4px;
+        background: var(--bg3);
         border-radius: 2px;
         overflow: hidden;
       }
       .probe-fill {
         height: 100%;
-        width: 100%;
         border-radius: 2px;
-        background: var(--green);
         transition:
-          width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-          background 0.4s;
+          width 0.4s ease,
+          background 0.4s ease;
       }
-      .probe-score {
-        font-family: var(--mono);
-        font-size: 10px;
-        font-weight: 300;
-        color: var(--text-3);
-        width: 24px;
+      .probe-val {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--text3);
+        width: 28px;
         text-align: right;
-        transition: color 0.4s;
       }
 
-      /* ── CENTER ── */
-      .center-pane {
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        background: rgba(0, 0, 0, 0.15);
-      }
-
-      #radarPane {
-        flex: 0 0 52%;
-        display: flex;
-        flex-direction: column;
-        border-bottom: 1px solid var(--border);
-        overflow: hidden;
-      }
-      #radarCanvas {
-        flex: 1;
-        min-height: 0;
-      }
-      #radarSvg {
+      /* ── RADAR ── */
+      #radar-container {
         width: 100%;
-        height: 100%;
-      }
-
-      #waveWrap {
-        height: 52px;
-        display: none;
-        align-items: center;
-        padding: 0 20px;
-        gap: 2px;
-        border-top: 1px solid var(--border);
-        background: rgba(0, 0, 0, 0.25);
-        flex-shrink: 0;
-      }
-      .wbar {
-        flex: 1;
-        border-radius: 2px;
-        background: var(--blue);
-        opacity: 0.5;
-        min-height: 2px;
-        transition: height 0.1s ease;
-      }
-
-      #txPane {
-        flex: 1;
+        max-width: 250px;
+        aspect-ratio: 1;
         display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
-      .tx-scroll {
-        flex: 1;
-        overflow-y: auto;
-        padding: 16px 20px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
-      }
-      .tx-scroll::-webkit-scrollbar {
-        width: 3px;
-      }
-      .tx-scroll::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-      }
-      .empty-state {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 10px;
-        color: var(--text-4);
-      }
-      .empty-icon {
-        font-size: 24px;
-      }
-      .empty-label {
-        font-size: 11px;
-        font-weight: 400;
-        letter-spacing: 0.05em;
-      }
-      .msg {
-        display: flex;
-        gap: 10px;
-        align-items: flex-start;
-        animation: msg-in 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      @keyframes msg-in {
-        from {
-          opacity: 0;
-          transform: translateY(5px);
-        }
-        to {
-          opacity: 1;
-          transform: none;
-        }
-      }
-      .msg-tag {
-        font-size: 10px;
-        font-weight: 500;
-        padding: 2px 8px;
-        border-radius: 4px;
-        flex-shrink: 0;
-        margin-top: 1px;
-        letter-spacing: 0.03em;
-      }
-      .msg-agent .msg-tag {
-        background: var(--blue-subtle);
-        color: var(--blue);
-        border: 1px solid rgba(10, 132, 255, 0.2);
-      }
-      .msg-user .msg-tag {
-        background: var(--surface-2);
-        color: var(--text-3);
-        border: 1px solid var(--border);
-      }
-      .msg-system .msg-tag {
-        background: rgba(255, 159, 10, 0.08);
-        color: var(--orange);
-        border: 1px solid rgba(255, 159, 10, 0.2);
-      }
-      .msg-body {
-        font-size: 13px;
-        font-weight: 400;
-        line-height: 1.55;
-        color: var(--text-2);
-        padding-top: 2px;
-      }
-      .msg-agent .msg-body {
-        color: var(--text-1);
-      }
-      .msg-system .msg-body {
-        color: var(--orange);
-        font-family: var(--mono);
-        font-size: 11px;
       }
 
-      /* ── RIGHT DOSSIER ── */
-      .dossier-pane {
-        background: rgba(0, 0, 0, 0.2);
-      }
-      .cog-block {
-        padding: 16px 18px 14px;
-        border-bottom: 1px solid var(--border);
-        flex-shrink: 0;
-      }
-      .cog-label {
-        font-size: 10px;
-        font-weight: 500;
-        color: var(--text-3);
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        margin-bottom: 6px;
-      }
-      #aiMode {
-        font-size: 20px;
-        font-weight: 600;
-        letter-spacing: -0.01em;
-        color: var(--text-1);
-        line-height: 1.1;
-        transition: color 0.4s;
-      }
-      #aiMode.red {
-        color: var(--red);
-      }
-      #aiMode.blue {
-        color: var(--blue);
-      }
-      #aiMode.green {
-        color: var(--green);
-      }
-      #aiMode.amber {
-        color: var(--orange);
-      }
-      .churn-row {
+      /* ── WAVEFORM ── */
+      .waveform {
         display: flex;
         align-items: center;
-        gap: 10px;
-        margin-top: 12px;
+        justify-content: center;
+        gap: 2px;
+        height: 40px;
+        margin: 10px 0;
       }
-      .churn-label {
+      .wave-bar {
+        width: 3px;
+        border-radius: 2px;
+        background: var(--blue);
+        transition: height 0.1s ease;
+        min-height: 3px;
+      }
+
+      /* ── TRANSCRIPT ── */
+      .transcript-scroll {
+        height: 280px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+      .transcript-scroll::-webkit-scrollbar {
+        width: 3px;
+      }
+      .transcript-scroll::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .transcript-scroll::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+      .t-row {
+        margin-bottom: 10px;
+      }
+      .t-role {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        letter-spacing: 1px;
+        margin-bottom: 3px;
+      }
+      .t-role.agent {
+        color: var(--blue);
+      }
+      .t-role.user {
+        color: var(--green);
+      }
+      .t-role.system {
+        color: var(--orange);
+      }
+      .t-msg {
+        font-size: 12px;
+        color: var(--text);
+        line-height: 1.4;
+      }
+
+      /* ── RESPONSE GRID ── */
+      .response-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .r-slot {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 7px 9px;
+        transition: all 0.3s;
+        position: relative;
+      }
+      .r-slot.answered {
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.04);
+      }
+      .r-slot.validation {
+        border-color: var(--purple);
+      }
+      .r-slot.validation.answered {
+        border-color: var(--purple);
+        background: rgba(191, 90, 242, 0.06);
+      }
+      .r-slot.extracted {
+        border-color: var(--teal);
+        background: rgba(90, 200, 250, 0.04);
+      }
+      .r-slot-label {
+        font-size: 9px;
+        color: var(--text2);
+        font-family: "DM Mono", monospace;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .r-slot-answer {
+        font-size: 11px;
+        color: var(--text);
+        margin-top: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .check {
+        color: var(--green);
+        font-size: 11px;
+      }
+      .check-purple {
+        color: var(--purple);
+        font-size: 11px;
+      }
+      .check-teal {
+        color: var(--teal);
         font-size: 10px;
-        color: var(--text-3);
-        font-weight: 500;
-        letter-spacing: 0.04em;
+      }
+      .extract-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 8px;
+        color: var(--teal);
+        letter-spacing: 0.5px;
+      }
+
+      /* ── AI STATE ── */
+      .ai-state {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 2px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid;
+        margin-bottom: 12px;
         text-transform: uppercase;
       }
+      .ai-state.standard {
+        border-color: var(--blue);
+        color: var(--blue);
+        background: rgba(10, 132, 255, 0.06);
+      }
+      .ai-state.warning {
+        border-color: var(--orange);
+        color: var(--orange);
+        background: rgba(255, 159, 10, 0.06);
+      }
+      .ai-state.danger {
+        border-color: var(--red);
+        color: var(--red);
+        background: rgba(255, 69, 58, 0.06);
+      }
+      .ai-state.success {
+        border-color: var(--green);
+        color: var(--green);
+        background: rgba(48, 209, 88, 0.06);
+      }
+
+      /* ── CHURN METER ── */
       .churn-track {
-        flex: 1;
-        height: 2px;
-        background: var(--surface-3);
-        border-radius: 2px;
+        height: 6px;
+        background: var(--bg3);
+        border-radius: 3px;
         overflow: hidden;
+        margin: 6px 0;
       }
       .churn-fill {
         height: 100%;
-        width: 0%;
-        border-radius: 2px;
-        background: var(--green);
+        border-radius: 3px;
         transition:
-          width 0.7s cubic-bezier(0.4, 0, 0.2, 1),
-          background 0.5s;
+          width 0.6s ease,
+          background 0.6s ease;
       }
-      #churnVal {
-        font-family: var(--mono);
-        font-size: 16px;
-        font-weight: 400;
-        color: var(--text-1);
-        min-width: 40px;
-        text-align: right;
+      .churn-labels {
+        display: flex;
+        justify-content: space-between;
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--text3);
       }
 
-      .dos-scroll {
-        flex: 1;
-        overflow-y: auto;
-        padding: 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        scrollbar-width: none;
-      }
-      .dos-scroll::-webkit-scrollbar {
+      /* ── CONTRADICTION CARD ── */
+      .contradiction-card {
+        background: rgba(255, 69, 58, 0.06);
+        border: 1px solid rgba(255, 69, 58, 0.3);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
         display: none;
       }
+      .contradiction-card.visible {
+        display: block;
+      }
+      .c-item {
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid rgba(255, 69, 58, 0.1);
+      }
+      .c-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      .c-summary {
+        font-size: 11px;
+        color: var(--red);
+        margin-bottom: 4px;
+      }
+      .c-fields {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--text2);
+      }
 
-      /* CARDS */
-      .card {
-        background: var(--surface-1);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        overflow: hidden;
-        transition: border-color 0.3s;
+      /* ── MULTI-EXTRACT CARD ── */
+      .extract-card {
+        background: rgba(90, 200, 250, 0.04);
+        border: 1px solid rgba(90, 200, 250, 0.2);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        display: none;
       }
-      .card.active {
-        border-color: rgba(10, 132, 255, 0.25);
+      .extract-card.visible {
+        display: block;
       }
-      .card.done {
-        border-color: rgba(48, 209, 88, 0.2);
+      .ex-count {
+        font-family: "DM Mono", monospace;
+        font-size: 18px;
+        font-weight: 500;
+        color: var(--teal);
+        line-height: 1;
+        margin-bottom: 4px;
       }
-      .card.flagged {
-        border-color: rgba(255, 69, 58, 0.25);
+      .ex-label {
+        font-size: 10px;
+        color: var(--text2);
+        margin-bottom: 8px;
       }
-      .card-head {
-        padding: 10px 14px;
+      .ex-item {
+        font-size: 10px;
+        color: var(--teal);
+        font-family: "DM Mono", monospace;
+        margin-bottom: 3px;
+      }
+
+      /* ── GLP-1 RISK MATRIX CARD (NEW v4) ── */
+      .glp1-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+      }
+      .glp1-card.visible {
+        display: block;
+      }
+      .glp1-intro {
+        font-size: 10px;
+        color: var(--text2);
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+      .glp1-factor {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 7px 0;
         border-bottom: 1px solid var(--border);
+      }
+      .glp1-factor:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .glp1-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--red);
+        flex-shrink: 0;
+        margin-top: 4px;
+      }
+      .glp1-dot.inactive {
+        background: var(--text3);
+      }
+      .glp1-factor-label {
+        font-size: 11px;
+        color: var(--text);
+        margin-bottom: 2px;
+      }
+      .glp1-evidence {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--text3);
+        line-height: 1.3;
+      }
+      .glp1-total {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: rgba(0, 0, 0, 0.2);
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--border);
       }
-      .card-title {
+      .glp1-total-label {
         font-size: 10px;
+        color: var(--text2);
+      }
+      .glp1-total-count {
+        font-family: "DM Mono", monospace;
+        font-size: 14px;
         font-weight: 500;
-        color: var(--text-3);
-        letter-spacing: 0.06em;
+        color: var(--red);
+      }
+
+      /* ── LONGITUDINAL DELTA CARD (NEW v4) ── */
+      .delta-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+      }
+      .delta-card.visible {
+        display: block;
+      }
+      .delta-trend {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .delta-arrow {
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .delta-arrow.improving {
+        color: var(--green);
+      }
+      .delta-arrow.stable {
+        color: var(--blue);
+      }
+      .delta-arrow.deteriorating {
+        color: var(--red);
+      }
+      .delta-trend-label {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 2px;
         text-transform: uppercase;
       }
-      .pill {
+      .delta-rows {
+        border-top: 1px solid var(--border);
+      }
+      .delta-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 7px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .delta-row:last-child {
+        border-bottom: none;
+      }
+      .delta-row-key {
+        font-family: "DM Mono", monospace;
         font-size: 9px;
+        color: var(--text2);
+        letter-spacing: 1px;
+        width: 80px;
+        flex-shrink: 0;
+        padding-top: 1px;
+      }
+      .delta-row-val {
+        font-size: 11px;
+        color: var(--text);
+        flex: 1;
+        line-height: 1.4;
+      }
+      .delta-escalation {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 7px 10px;
+        background: rgba(255, 69, 58, 0.06);
+        border: 1px solid rgba(255, 69, 58, 0.2);
+        border-radius: 6px;
+        font-size: 11px;
+        color: var(--red);
+      }
+      .delta-no-data {
+        font-size: 11px;
+        color: var(--text2);
+        font-style: italic;
+      }
+
+      /* ── HESITATION FINGERPRINT CARD (NEW v4) ── */
+      .hesitation-card {
+        background: rgba(255, 159, 10, 0.03);
+        border: 1px solid rgba(255, 159, 10, 0.15);
+        border-radius: 8px;
+        padding: 12px;
+        margin-bottom: 12px;
+        display: none;
+      }
+      .hesitation-card.visible {
+        display: block;
+      }
+      .hesitation-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .hesitation-index {
+        font-family: "DM Mono", monospace;
+        font-size: 22px;
         font-weight: 500;
+        line-height: 1;
+      }
+      .hesitation-index.low {
+        color: var(--green);
+      }
+      .hesitation-index.elevated {
+        color: var(--orange);
+      }
+      .hesitation-index.high {
+        color: var(--red);
+      }
+      .hesitation-level-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 3px 8px;
+        border-radius: 10px;
+        border: 1px solid;
+        letter-spacing: 1px;
+      }
+      .hesitation-level-badge.low {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.08);
+      }
+      .hesitation-level-badge.elevated {
+        color: var(--orange);
+        border-color: var(--orange);
+        background: rgba(255, 159, 10, 0.08);
+      }
+      .hesitation-level-badge.high {
+        color: var(--red);
+        border-color: var(--red);
+        background: rgba(255, 69, 58, 0.08);
+      }
+      .hesitation-metrics {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .h-metric {
+        background: var(--bg3);
+        border-radius: 6px;
+        padding: 7px 9px;
+      }
+      .h-metric-val {
+        font-family: "DM Mono", monospace;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+      }
+      .h-metric-label {
+        font-size: 9px;
+        color: var(--text2);
+        margin-top: 1px;
+      }
+      .h-pattern {
+        font-size: 10px;
+        color: var(--orange);
+        font-family: "DM Mono", monospace;
+        margin-bottom: 4px;
+      }
+      .h-pattern:before {
+        content: "⚠ ";
+      }
+
+      /* ── DELIBERATION VOICES ── */
+      .voice-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .voice-box {
+        border-radius: 8px;
+        padding: 10px;
+        border: 1px solid;
+      }
+      .voice-box.advocate {
+        border-color: rgba(48, 209, 88, 0.3);
+        background: rgba(48, 209, 88, 0.05);
+      }
+      .voice-box.skeptic {
+        border-color: rgba(255, 69, 58, 0.3);
+        background: rgba(255, 69, 58, 0.05);
+      }
+      .voice-box.arbiter {
+        border-color: rgba(10, 132, 255, 0.3);
+        background: rgba(10, 132, 255, 0.05);
+      }
+      .voice-label {
+        font-family: "DM Mono", monospace;
+        font-size: 8px;
+        letter-spacing: 1px;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+      .voice-box.advocate .voice-label {
+        color: var(--green);
+      }
+      .voice-box.skeptic .voice-label {
+        color: var(--red);
+      }
+      .voice-box.arbiter .voice-label {
+        color: var(--blue);
+      }
+      .voice-text {
+        font-size: 10px;
+        color: var(--text);
+        line-height: 1.4;
+      }
+
+      /* ── VALIDATOR BADGE ── */
+      .validator-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg3);
+      }
+      .validator-icon {
+        font-size: 14px;
+      }
+      .validator-text {
+        font-size: 11px;
+        color: var(--text2);
+        flex: 1;
+      }
+      .validator-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
         padding: 2px 8px;
         border-radius: 10px;
-        letter-spacing: 0.04em;
+        border: 1px solid;
       }
-      .pill-wait {
-        background: var(--surface-3);
-        color: var(--text-3);
+      .validator-pass {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.08);
       }
-      .pill-live {
-        background: var(--red-subtle);
+      .validator-fail {
         color: var(--red);
-        border: 1px solid rgba(255, 69, 58, 0.2);
+        border-color: var(--red);
+        background: rgba(255, 69, 58, 0.08);
       }
-      .pill-done {
-        background: var(--green-subtle);
+      .validator-unknown {
+        color: var(--text2);
+        border-color: var(--border);
+      }
+
+      /* ── ADHERENCE FORECAST ── */
+      .forecast-card {
+        background: linear-gradient(
+          135deg,
+          rgba(10, 132, 255, 0.06) 0%,
+          rgba(191, 90, 242, 0.06) 100%
+        );
+        border: 1px solid rgba(10, 132, 255, 0.2);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+      }
+      .forecast-card.visible {
+        display: block;
+      }
+      .forecast-pct {
+        font-family: "DM Mono", monospace;
+        font-size: 40px;
+        font-weight: 500;
+        line-height: 1;
+        margin-bottom: 4px;
+      }
+      .forecast-pct.high {
+        color: var(--green);
+      }
+      .forecast-pct.medium {
+        color: var(--orange);
+      }
+      .forecast-pct.low {
+        color: var(--red);
+      }
+      .forecast-label {
+        font-size: 11px;
+        color: var(--text2);
+        margin-bottom: 10px;
+      }
+      .forecast-factors {
+        margin-bottom: 10px;
+      }
+      .forecast-factor {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 5px;
+        font-size: 11px;
+        color: var(--text);
+      }
+      .factor-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--red);
+        flex-shrink: 0;
+      }
+      .forecast-contact {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 6px;
+        border: 1px solid var(--border);
+      }
+      .contact-window {
+        font-family: "DM Mono", monospace;
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--blue);
+      }
+      .contact-reason {
+        font-size: 10px;
+        color: var(--text2);
+      }
+
+      /* ── PRIORITY ACTION BOARD ── */
+      .priority-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+      }
+      .priority-card.visible {
+        display: block;
+      }
+      .p-action {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .p-action:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .p-urgency {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 3px 8px;
+        border-radius: 4px;
+        letter-spacing: 1px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .p-urgency.URGENT {
+        background: rgba(255, 69, 58, 0.15);
+        color: var(--red);
+        border: 1px solid rgba(255, 69, 58, 0.3);
+      }
+      .p-urgency.REVIEW {
+        background: rgba(255, 159, 10, 0.12);
+        color: var(--orange);
+        border: 1px solid rgba(255, 159, 10, 0.3);
+      }
+      .p-urgency.MONITOR {
+        background: rgba(48, 209, 88, 0.08);
         color: var(--green);
         border: 1px solid rgba(48, 209, 88, 0.2);
       }
-      .pill-warn {
-        background: rgba(255, 159, 10, 0.1);
-        color: var(--orange);
-        border: 1px solid rgba(255, 159, 10, 0.25);
+      .p-content {
+        flex: 1;
       }
-      .card-body {
-        padding: 12px 14px;
+      .p-category {
+        font-size: 9px;
+        color: var(--text2);
+        font-family: "DM Mono", monospace;
+        margin-bottom: 3px;
+      }
+      .p-text {
         font-size: 11px;
-        font-weight: 400;
-        color: var(--text-2);
+        color: var(--text);
+        line-height: 1.4;
+      }
+
+      /* ── SOAP NOTE ── */
+      .soap-text {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: var(--text2);
         line-height: 1.7;
         white-space: pre-wrap;
-        font-family: var(--mono);
-        min-height: 52px;
       }
 
-      /* ARBITER VERDICT LAYOUT */
-      .verdict-block {
-        padding: 12px 14px;
-        display: flex;
-        flex-direction: column;
-        gap: 7px;
-      }
-      .verdict-summary {
+      /* ── PROFILE / EDGE ── */
+      .profile-text {
         font-size: 12px;
-        font-weight: 400;
-        color: var(--text-2);
+        color: var(--text);
         line-height: 1.6;
-        margin-bottom: 4px;
+        margin-bottom: 10px;
       }
-      .verdict-row {
-        padding: 8px 10px;
-        border-radius: 8px;
-        font-size: 10px;
-        font-weight: 400;
-        line-height: 1.5;
-      }
-      .verdict-advocate {
-        background: rgba(48, 209, 88, 0.06);
-        color: var(--green);
-        border: 1px solid rgba(48, 209, 88, 0.15);
-      }
-      .verdict-skeptic {
-        background: rgba(255, 69, 58, 0.06);
-        color: var(--red);
-        border: 1px solid rgba(255, 69, 58, 0.15);
-      }
-      .verdict-arbiter {
-        background: rgba(10, 132, 255, 0.06);
-        color: var(--blue);
-        border: 1px solid rgba(10, 132, 255, 0.15);
-      }
-      .verdict-tag {
-        font-size: 9px;
-        font-weight: 600;
-        letter-spacing: 0.08em;
-        opacity: 0.7;
-        margin-bottom: 3px;
-        display: block;
+      .edge-text {
+        font-size: 11px;
+        color: var(--text2);
+        line-height: 1.6;
+        white-space: pre-wrap;
       }
 
-      /* CONTRADICTION ROWS */
-      .contra-item {
-        padding: 8px 10px;
-        border-radius: 6px;
-        background: rgba(255, 69, 58, 0.05);
-        border: 1px solid rgba(255, 69, 58, 0.15);
-        font-size: 10px;
-        font-family: var(--mono);
-        color: var(--text-2);
-        line-height: 1.5;
-      }
-      .contra-item + .contra-item {
-        margin-top: 6px;
-      }
-
-      /* CAPTURE GRID */
-      .cap-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1px;
-        background: var(--border);
-      }
-      .cap-cell {
-        background: rgba(0, 0, 0, 0.3);
-        padding: 8px 12px;
-        font-size: 10px;
-        font-weight: 400;
-        color: var(--text-3);
+      /* ── MI FIDELITY BADGE (inline in profile card) ── */
+      .mi-row {
         display: flex;
         align-items: center;
-        gap: 7px;
-        transition:
-          background 0.3s,
-          color 0.3s;
+        justify-content: space-between;
+        padding: 8px 12px;
+        background: var(--bg3);
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        margin-bottom: 10px;
       }
-      .cap-cell::before {
-        content: "○";
-        font-size: 9px;
-        color: var(--text-4);
+      .mi-score-num {
+        font-family: "DM Mono", monospace;
+        font-size: 22px;
+        font-weight: 500;
       }
-      .cap-cell.ok {
-        background: rgba(48, 209, 88, 0.04);
-        color: var(--text-1);
-      }
-      .cap-cell.ok::before {
-        content: "✓";
+      .mi-score-num.strong {
         color: var(--green);
       }
-      .cap-cell.validation {
-        font-style: italic;
-        opacity: 0.7;
+      .mi-score-num.adequate {
+        color: var(--blue);
+      }
+      .mi-score-num.weak {
+        color: var(--orange);
+      }
+      .mi-label {
+        font-size: 10px;
+        color: var(--text2);
+      }
+      .mi-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 3px 10px;
+        border-radius: 10px;
+        border: 1px solid;
+      }
+      .mi-badge.strong {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.08);
+      }
+      .mi-badge.adequate {
+        color: var(--blue);
+        border-color: var(--blue);
+        background: rgba(10, 132, 255, 0.08);
+      }
+      .mi-badge.weak {
+        color: var(--orange);
+        border-color: var(--orange);
+        background: rgba(255, 159, 10, 0.08);
+      }
+
+      /* ── HIDDEN ── */
+      .hidden {
+        display: none !important;
       }
     </style>
   </head>
   <body>
-    <div class="app">
-      <!-- ═══ TITLEBAR ═══════════════════════════════════ -->
-      <header class="titlebar">
-        <div class="brand">
-          <div class="brand-name">SPECTER</div>
-          <div class="brand-sub">Clinical Intelligence Platform</div>
-        </div>
-        <div class="tb-div"></div>
-        <div class="tb-meta">Medication Refill Protocol · TrimRX</div>
-        <div class="tb-right">
-          <div id="sysClock"></div>
-          <div class="tb-div"></div>
-          <div id="sessB" class="status-badge">
-            <div class="badge-dot"></div>
-            <span id="sessLabel">Idle</span>
+    <!-- ══ HEADER ══ -->
+    <div class="header">
+      <div class="header-left">
+        <div>
+          <div class="logo">SPECTER</div>
+          <div class="logo-sub">
+            CLINICAL INTELLIGENCE PLATFORM · TRIMRX · V4
           </div>
         </div>
-      </header>
-
-      <!-- ═══ WORKSPACE ════════════════════════════════════ -->
-      <div class="grid">
-        <!-- ── LEFT ── -->
-        <aside class="pane cmd-pane">
-          <div class="pane-header">
-            <span class="pane-title">Configuration</span>
-          </div>
-          <div class="cmd-scroll">
-            <div class="field">
-              <div class="field-label">Patient ID</div>
-              <input
-                class="field-input"
-                id="patientName"
-                type="text"
-                value="Elena Vance"
-              />
-            </div>
-            <div class="field">
-              <div class="field-label">Medication</div>
-              <input
-                class="field-input"
-                id="medication"
-                type="text"
-                value="Semaglutide, 1.0mg"
-              />
-            </div>
-            <div class="field">
-              <div class="field-label">EHR Context</div>
-              <textarea class="field-input" id="patientContext">
-Target weight: 150 lbs. Prone to anxiety regarding weight loss plateaus.</textarea
-              >
-            </div>
-
-            <button class="btn btn-primary" onclick="startCall()">
-              Begin Triage Call
-            </button>
-            <button class="btn btn-danger" onclick="endCall()">
-              Force End Call
-            </button>
-            <button
-              class="btn btn-success"
-              id="exportBtn"
-              onclick="downloadJSON()"
-            >
-              Export JSON Dossier
-            </button>
-
-            <div class="sep"></div>
-
-            <!-- SIGNAL SCORE -->
-            <div class="signal-block">
-              <div class="signal-row">
-                <div class="signal-label">Signal Score</div>
-                <div class="signal-val" id="signalVal">0</div>
-              </div>
-              <div class="signal-row">
-                <div class="signal-label">Interview Depth</div>
-                <div class="depth-badge" id="depthBadge">Standby</div>
-              </div>
-            </div>
-
-            <div class="sep"></div>
-
-            <!-- PROBE ARRAY -->
-            <div>
-              <div class="section-label">Probe Array</div>
-              <div class="probe-list" id="probeList"></div>
-            </div>
-          </div>
-        </aside>
-
-        <!-- ── CENTER ── -->
-        <div class="pane center-pane">
-          <!-- RADAR -->
-          <div id="radarPane">
-            <div class="pane-header">
-              <span class="pane-title">Behavioral Radar</span>
-              <div class="live-dot" id="rdDot"></div>
-            </div>
-            <div id="radarCanvas">
-              <svg
-                id="radarSvg"
-                viewBox="0 0 520 270"
-                preserveAspectRatio="xMidYMid meet"
-              ></svg>
-            </div>
-            <div id="waveWrap"></div>
-          </div>
-
-          <!-- TRANSCRIPT -->
-          <div class="pane" id="txPane" style="border-right: none">
-            <div class="pane-header">
-              <span class="pane-title">Live Transcript</span>
-              <div class="live-dot" id="txDot"></div>
-            </div>
-            <div class="tx-scroll" id="txScroll">
-              <div class="empty-state" id="emptyTx">
-                <div class="empty-icon">◎</div>
-                <div class="empty-label">Awaiting audio stream</div>
-              </div>
-            </div>
-          </div>
+        <div class="header-badge badge-ready" id="status-badge">STANDBY</div>
+      </div>
+      <div class="header-right">
+        <div
+          style="
+            font-family: &quot;DM Mono&quot;, monospace;
+            font-size: 10px;
+            color: var(--text2);
+          "
+          id="call-timer"
+        >
+          00:00
         </div>
-
-        <!-- ── RIGHT ── -->
-        <aside class="pane dossier-pane">
-          <div class="pane-header">
-            <span class="pane-title">Analytics Dossier</span>
-            <div class="live-dot" id="dDot"></div>
-          </div>
-
-          <!-- COG STATE -->
-          <div class="cog-block">
-            <div class="cog-label">AI State</div>
-            <div id="aiMode">Standby</div>
-            <div class="churn-row">
-              <div class="churn-label">Churn</div>
-              <div class="churn-track">
-                <div class="churn-fill" id="churnFill"></div>
-              </div>
-              <div id="churnVal">—</div>
-            </div>
-          </div>
-
-          <div class="dos-scroll">
-            <!-- CAPTURE -->
-            <div class="card" id="capCard">
-              <div class="card-head">
-                <span class="card-title">Response Capture</span>
-                <span class="pill pill-wait" id="capPill">0 / 10</span>
-              </div>
-              <div class="cap-grid" id="capGrid"></div>
-            </div>
-
-            <!-- CONTRADICTIONS (hidden until detected) -->
-            <div class="card flagged hidden" id="contraCard">
-              <div class="card-head">
-                <span class="card-title">Contradictions Detected</span>
-                <span class="pill pill-live" id="contraPill">0</span>
-              </div>
-              <div style="padding: 12px 14px" id="contraBody"></div>
-            </div>
-
-            <!-- BEHAVIORAL PROFILE + ARBITER -->
-            <div class="card" id="bpCard">
-              <div class="card-head">
-                <span class="card-title">Behavioral Profile</span>
-                <span class="pill pill-wait" id="bpPill">Pending</span>
-              </div>
-              <div id="bpBox">
-                <div class="card-body">Awaiting synthesis…</div>
-              </div>
-            </div>
-
-            <!-- EDGE CASE AUDIT -->
-            <div class="card" id="ecCard">
-              <div class="card-head">
-                <span class="card-title">Edge Case Audit</span>
-                <span class="pill pill-wait" id="ecPill">Pending</span>
-              </div>
-              <div class="card-body" id="ecBox">Awaiting telemetry…</div>
-            </div>
-
-            <!-- SOAP NOTE -->
-            <div class="card" id="soapCard">
-              <div class="card-head">
-                <span class="card-title">SOAP Note</span>
-                <span class="pill pill-wait" id="soapPill">Pending</span>
-              </div>
-              <div class="card-body" id="soapBox">Connecting to EHR…</div>
-            </div>
-          </div>
-        </aside>
+        <div
+          style="
+            font-family: &quot;DM Mono&quot;, monospace;
+            font-size: 10px;
+            color: var(--text3);
+            margin: 0 8px;
+          "
+        >
+          |
+        </div>
+        <div
+          style="
+            font-family: &quot;DM Mono&quot;, monospace;
+            font-size: 10px;
+            color: var(--text2);
+          "
+        >
+          VOICEHACK 2026
+        </div>
+        <div
+          style="
+            font-family: &quot;DM Mono&quot;, monospace;
+            font-size: 10px;
+            color: var(--text3);
+            margin: 0 8px;
+          "
+        >
+          |
+        </div>
+        <div
+          style="
+            font-family: &quot;DM Mono&quot;, monospace;
+            font-size: 10px;
+            color: var(--blue);
+          "
+        >
+          TEAM BLITZKRIEG
+        </div>
       </div>
     </div>
-    <!-- /app -->
+
+    <!-- ══ MAIN LAYOUT ══ -->
+    <div class="layout">
+      <!-- ── LEFT PANEL ── -->
+      <div class="panel">
+        <div class="card">
+          <div class="card-title">
+            Patient Configuration
+            <div class="card-title-dot" id="config-dot"></div>
+          </div>
+          <div class="field-label">Patient Name</div>
+          <input class="field-input" id="patient-name" value="Elena Vance" />
+          <div class="field-label">Medication</div>
+          <input
+            class="field-input"
+            id="medication"
+            value="Semaglutide, 1.0mg"
+          />
+          <div class="field-label">EHR Context</div>
+          <input
+            class="field-input"
+            id="patient-context"
+            value="Target weight: 150 lbs. On treatment 3 months."
+          />
+          <!-- NEW v4: Previous call context for longitudinal delta -->
+          <div class="field-label" style="color: var(--purple)">
+            Previous Call Context
+            <span style="color: var(--text3); font-size: 9px; letter-spacing: 0"
+              >(optional — enables longitudinal delta)</span
+            >
+          </div>
+          <input
+            class="field-input"
+            id="previous-call-context"
+            style="border-color: rgba(191, 90, 242, 0.3)"
+            placeholder="e.g. Weight 188 lbs, lost 4 lbs, mild nausea, satisfied, no concerns."
+            value=""
+          />
+          <button class="btn btn-primary" id="btn-start" onclick="startCall()">
+            Begin Triage Call
+          </button>
+          <button
+            class="btn btn-danger hidden"
+            id="btn-end"
+            onclick="endCall()"
+          >
+            Force End Call
+          </button>
+          <button
+            class="btn btn-ghost hidden"
+            id="btn-export"
+            onclick="exportJSON()"
+          >
+            Export JSON Dossier
+          </button>
+        </div>
+
+        <!-- Signal Score -->
+        <div class="card">
+          <div class="card-title">
+            Clinical Signal
+            <div class="card-title-dot" id="signal-dot"></div>
+          </div>
+          <div class="signal-row">
+            <div>
+              <div
+                class="signal-score-num"
+                id="signal-score"
+                style="color: var(--blue)"
+              >
+                0
+              </div>
+              <div
+                style="font-size: 10px; color: var(--text2); margin-top: 2px"
+              >
+                ACCUMULATED SIGNAL
+              </div>
+            </div>
+            <div class="depth-badge depth-standard" id="depth-badge">
+              STANDARD
+            </div>
+          </div>
+        </div>
+
+        <!-- Probe Array (now 8 probes including H) -->
+        <div class="card">
+          <div class="card-title">
+            SPECTER Probes
+            <div class="card-title-dot" id="probe-dot"></div>
+          </div>
+          <div id="probe-array"></div>
+        </div>
+
+        <!-- Multi-Extract Indicator -->
+        <div class="extract-card" id="extract-card">
+          <div class="card-title" style="margin-bottom: 8px">
+            Multi-Answer Capture
+            <div class="card-title-dot" style="background: var(--teal)"></div>
+          </div>
+          <div class="ex-count" id="extract-count">0</div>
+          <div class="ex-label">
+            extra answers auto-extracted from patient speech
+          </div>
+          <div id="extract-list"></div>
+        </div>
+
+        <!-- NEW v4: Hesitation Fingerprint (left panel, below extract card) -->
+        <div class="hesitation-card" id="hesitation-card">
+          <div
+            class="card-title"
+            style="margin-bottom: 10px; color: var(--orange)"
+          >
+            Hesitation Fingerprint
+            <div class="card-title-dot" style="background: var(--orange)"></div>
+          </div>
+          <div class="hesitation-header">
+            <div>
+              <div class="hesitation-index" id="hesitation-index">—</div>
+              <div style="font-size: 9px; color: var(--text2); margin-top: 2px">
+                HESITATION INDEX
+              </div>
+            </div>
+            <div class="hesitation-level-badge low" id="hesitation-level-badge">
+              —
+            </div>
+          </div>
+          <div class="hesitation-metrics" id="hesitation-metrics"></div>
+          <div id="hesitation-patterns"></div>
+        </div>
+      </div>
+
+      <!-- ── CENTER PANEL ── -->
+      <div class="panel" style="border-right: 1px solid var(--border)">
+        <div class="card">
+          <div class="card-title">
+            Behavioral Radar
+            <div class="card-title-dot live" id="radar-dot"></div>
+          </div>
+          <div id="radar-container"><svg id="radar-svg"></svg></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            Audio Stream
+            <div class="card-title-dot" id="wave-dot"></div>
+          </div>
+          <div class="waveform" id="waveform"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            Live Transcript
+            <div class="card-title-dot live" id="tx-dot"></div>
+          </div>
+          <div class="transcript-scroll" id="transcript"></div>
+        </div>
+      </div>
+
+      <!-- ── RIGHT PANEL ── -->
+      <div class="panel">
+        <div class="ai-state standard" id="ai-state">STANDARD CLINICAL</div>
+
+        <!-- Churn Risk -->
+        <div class="card">
+          <div class="card-title">
+            Churn Risk
+            <div class="card-title-dot" id="churn-dot"></div>
+          </div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 6px;
+            "
+          >
+            <div
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 20px;
+                font-weight: 500;
+              "
+              id="churn-score"
+            >
+              0%
+            </div>
+            <div
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 11px;
+                padding: 3px 10px;
+                border-radius: 4px;
+                border: 1px solid var(--border);
+              "
+              id="churn-risk-label"
+            >
+              —
+            </div>
+          </div>
+          <div class="churn-track">
+            <div
+              class="churn-fill"
+              id="churn-fill"
+              style="width: 0%; background: var(--green)"
+            ></div>
+          </div>
+          <div class="churn-labels">
+            <span>0</span><span>50</span><span>100</span>
+          </div>
+        </div>
+
+        <!-- NEW v4: GLP-1 Risk Matrix -->
+        <div class="glp1-card" id="glp1-card">
+          <div class="card-title" style="margin-bottom: 6px">
+            GLP-1 Risk Matrix
+            <div class="card-title-dot" style="background: var(--red)"></div>
+          </div>
+          <div class="glp1-intro">
+            Evidence-anchored discontinuation factors · JAMA 2025 · EASD 2025 ·
+            BHI 2024
+          </div>
+          <div id="glp1-factors"></div>
+          <div class="glp1-total">
+            <div class="glp1-total-label">Active risk factors</div>
+            <div class="glp1-total-count" id="glp1-active-count">0</div>
+          </div>
+        </div>
+
+        <!-- Response Grid -->
+        <div class="card">
+          <div class="card-title">
+            Response Capture — 14 Questions
+            <div class="card-title-dot" id="responses-dot"></div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: var(--teal);
+              font-family: &quot;DM Mono&quot;, monospace;
+              margin-bottom: 8px;
+              letter-spacing: 0.5px;
+            "
+          >
+            ○ TEAL = AUTO-EXTRACTED FROM PATIENT SPEECH
+          </div>
+          <div class="response-grid" id="response-grid"></div>
+        </div>
+
+        <!-- Contradiction Card -->
+        <div class="contradiction-card" id="contradiction-card">
+          <div
+            class="card-title"
+            style="color: var(--red); margin-bottom: 10px"
+          >
+            ⚠ CONTRADICTIONS DETECTED
+          </div>
+          <div id="contradiction-list"></div>
+        </div>
+
+        <!-- NEW v4: Longitudinal Delta -->
+        <div class="delta-card" id="delta-card">
+          <div class="card-title" style="margin-bottom: 10px">
+            Longitudinal Risk Delta
+            <div class="card-title-dot" style="background: var(--purple)"></div>
+          </div>
+          <div id="delta-body"></div>
+        </div>
+
+        <!-- 30-Day Adherence Forecast -->
+        <div class="forecast-card" id="forecast-card">
+          <div class="card-title" style="margin-bottom: 10px">
+            30-Day Adherence Forecast
+            <div class="card-title-dot" style="background: var(--purple)"></div>
+          </div>
+          <div class="forecast-pct" id="forecast-pct">—</div>
+          <div class="forecast-label" id="forecast-label">
+            Awaiting deliberation...
+          </div>
+          <div class="forecast-factors" id="forecast-factors"></div>
+          <div class="forecast-contact">
+            <div>
+              <div
+                style="
+                  font-size: 9px;
+                  color: var(--text2);
+                  margin-bottom: 2px;
+                  font-family: &quot;DM Mono&quot;, monospace;
+                  letter-spacing: 1px;
+                "
+              >
+                NEXT CONTACT
+              </div>
+              <div class="contact-window" id="contact-window">—</div>
+            </div>
+            <div
+              style="width: 1px; height: 32px; background: var(--border)"
+            ></div>
+            <div class="contact-reason" id="contact-reason">—</div>
+          </div>
+        </div>
+
+        <!-- Priority Action Board -->
+        <div class="priority-card" id="priority-card">
+          <div class="card-title" style="margin-bottom: 2px">
+            Priority Action Board
+            <div class="card-title-dot" style="background: var(--orange)"></div>
+          </div>
+          <div style="font-size: 9px; color: var(--text2); margin-bottom: 12px">
+            Care team instructions · SPECTER Arbiter
+          </div>
+          <div id="priority-actions"></div>
+        </div>
+
+        <!-- Behavioral Profile -->
+        <div class="card hidden" id="profile-card">
+          <div class="card-title">
+            Behavioral Profile
+            <div class="card-title-dot blue"></div>
+          </div>
+          <div class="profile-text" id="profile-text"></div>
+
+          <!-- NEW v4: MI Fidelity Score inside profile card -->
+          <div class="mi-row" id="mi-row" style="display: none">
+            <div>
+              <div class="mi-score-num strong" id="mi-score-num">—</div>
+              <div class="mi-label">Motivational Interviewing Score</div>
+            </div>
+            <div>
+              <div class="mi-badge strong" id="mi-badge">—</div>
+              <div
+                style="
+                  font-size: 9px;
+                  color: var(--text3);
+                  margin-top: 4px;
+                  text-align: right;
+                "
+              >
+                JMIR 2025 Standard
+              </div>
+            </div>
+          </div>
+          <div
+            id="mi-assessment-text"
+            style="
+              font-size: 10px;
+              color: var(--text2);
+              margin-bottom: 12px;
+              display: none;
+            "
+          ></div>
+
+          <div class="voice-row">
+            <div class="voice-box advocate">
+              <div class="voice-label">Advocate</div>
+              <div class="voice-text" id="advocate-text">—</div>
+            </div>
+            <div class="voice-box skeptic">
+              <div class="voice-label">Skeptic</div>
+              <div class="voice-text" id="skeptic-text">—</div>
+            </div>
+            <div class="voice-box arbiter">
+              <div class="voice-label">Arbiter</div>
+              <div class="voice-text" id="arbiter-text">—</div>
+            </div>
+          </div>
+          <div class="validator-row" id="validator-row">
+            <div class="validator-icon">🛡</div>
+            <div class="validator-text" id="validator-text">
+              Awaiting validation...
+            </div>
+            <div class="validator-badge validator-unknown" id="validator-badge">
+              PENDING
+            </div>
+          </div>
+        </div>
+
+        <!-- Edge Case Audit -->
+        <div class="card hidden" id="edge-card">
+          <div class="card-title">
+            Edge Case Audit
+            <div class="card-title-dot orange"></div>
+          </div>
+          <div class="edge-text" id="edge-text"></div>
+        </div>
+
+        <!-- SOAP Note -->
+        <div class="card hidden" id="soap-card">
+          <div class="card-title">
+            SOAP Note
+            <div class="card-title-dot green"></div>
+          </div>
+          <div class="soap-text" id="soap-text"></div>
+        </div>
+      </div>
+    </div>
 
     <script>
-      // ══════════════════════════════════════════════
-      // CONSTANTS
-      // ══════════════════════════════════════════════
-      const QLABELS = [
-        "Overall",
-        "Weight",
-        "Weight Loss",
-        "Side Effects",
-        "Satisfaction",
-        "New Meds",
-        "Allergies",
-        "Surgeries",
-        "Dr. Questions",
-        "Address",
-        "Target Gap",
-        "Supply Days",
-        "Adherence",
-        "Change Ask",
-        "Pharmacy",
-      ];
-      const PKEYS = [
-        "A_acoustic_fidelity",
-        "B_intent_alignment",
-        "C_coverage_integrity",
-        "D_safety_compliance",
-        "E_identity_signal",
-        "F_capture_accuracy",
-        "G_behavioral_signal",
-      ];
-      const PNAMES = {
-        A_acoustic_fidelity: "Acoustic",
-        B_intent_alignment: "Intent",
-        C_coverage_integrity: "Coverage",
-        D_safety_compliance: "Safety",
-        E_identity_signal: "Identity",
-        F_capture_accuracy: "Capture",
-        G_behavioral_signal: "Behavioral",
-      };
-      const SLABELS = [
-        "Acoustic",
-        "Intent",
-        "Coverage",
-        "Safety",
-        "Identity",
-        "Capture",
-        "Behavioral",
-      ];
+      // ── STATE ──
+      let pollInterval = null;
+      let callActive = false;
+      let lastTxLength = 0;
+      let lastState = null;
+      let timerSecs = 0;
+      let timerInterval = null;
 
-      let currentState = null,
-        waveIv = null,
-        lastTxLen = 0;
-      let bpRendered = false;
+      // ── WAVEFORM INIT ──
+      (function initWaveform() {
+        const w = document.getElementById("waveform");
+        for (let i = 0; i < 48; i++) {
+          const b = document.createElement("div");
+          b.className = "wave-bar";
+          b.style.height = "3px";
+          w.appendChild(b);
+        }
+      })();
 
-      // ══════════════════════════════════════════════
-      // CLOCK
-      // ══════════════════════════════════════════════
-      function tick() {
-        document.getElementById("sysClock").textContent =
-          new Date().toLocaleTimeString("en-US", {
-            hour12: false,
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }) + " UTC";
+      // ── WAVEFORM ANIMATION ──
+      let waveTimer = null;
+      function animateWave(active) {
+        const bars = document.querySelectorAll(".wave-bar");
+        if (waveTimer) clearInterval(waveTimer);
+        if (!active) {
+          bars.forEach((b) => {
+            b.style.height = "3px";
+            b.style.background = "var(--text3)";
+          });
+          return;
+        }
+        waveTimer = setInterval(() => {
+          bars.forEach((b) => {
+            const h = Math.floor(Math.random() * 32) + 3;
+            b.style.height = h + "px";
+            b.style.background =
+              h > 22 ? "var(--red)" : h > 14 ? "var(--orange)" : "var(--blue)";
+          });
+        }, 80);
       }
-      setInterval(tick, 1000);
-      tick();
 
-      // ══════════════════════════════════════════════
-      // PROBE LIST
-      // ══════════════════════════════════════════════
-      function buildProbeList() {
-        document.getElementById("probeList").innerHTML = PKEYS.map(
-          (k) => `
-    <div class="probe-item">
-      <div class="probe-name">${PNAMES[k]}</div>
-      <div class="probe-track"><div class="probe-fill" id="pf_${k}"></div></div>
-      <div class="probe-score" id="ps_${k}">1.0</div>
-    </div>`,
-        ).join("");
+      // ── TIMER ──
+      function startTimer() {
+        timerSecs = 0;
+        timerInterval = setInterval(() => {
+          timerSecs++;
+          const m = Math.floor(timerSecs / 60)
+            .toString()
+            .padStart(2, "0");
+          const s = (timerSecs % 60).toString().padStart(2, "0");
+          document.getElementById("call-timer").textContent = `${m}:${s}`;
+        }, 1000);
       }
-      buildProbeList();
+      function stopTimer() {
+        if (timerInterval) clearInterval(timerInterval);
+      }
 
-      function updateProbes(p) {
-        if (!p) return;
-        PKEYS.forEach((k) => {
-          const s = p[k] !== undefined ? p[k] : 1.0;
-          const pf = document.getElementById("pf_" + k);
-          const ps = document.getElementById("ps_" + k);
-          if (!pf) return;
-          pf.style.width = Math.round(s * 100) + "%";
-          const col =
-            s > 0.7
+      // ── PROBES ──
+      function renderProbes(probes, labels) {
+        const el = document.getElementById("probe-array");
+        el.innerHTML = "";
+        Object.entries(probes).forEach(([key, val]) => {
+          const label =
+            labels && labels[key] ? labels[key] : key.split("_")[1] || key;
+          const pct = Math.round(val * 100);
+          const color =
+            val >= 0.7
               ? "var(--green)"
-              : s > 0.35
+              : val >= 0.35
                 ? "var(--orange)"
                 : "var(--red)";
-          pf.style.background = col;
-          ps.textContent = s.toFixed(1);
-          ps.style.color = col;
+          // MI Fidelity probe gets gold accent label
+          const labelColor = key === "H_mi_fidelity" ? "var(--gold)" : "";
+          el.innerHTML += `
+      <div class="probe-row">
+        <div class="probe-label" style="color:${labelColor || "var(--text2)"}">${label}</div>
+        <div class="probe-track"><div class="probe-fill" style="width:${pct}%;background:${color}"></div></div>
+        <div class="probe-val" style="color:${color}">${val.toFixed(2)}</div>
+      </div>`;
         });
       }
 
-      // ══════════════════════════════════════════════
-      // SIGNAL SCORE + DEPTH BADGE
-      // ══════════════════════════════════════════════
-      function updateSignal(score, depth) {
-        document.getElementById("signalVal").textContent = score || 0;
-        const badge = document.getElementById("depthBadge");
-        if (!depth || depth === "standard") {
-          badge.textContent = "Standard";
-          badge.className = "depth-badge standard";
-        } else if (depth === "soft_probe") {
-          badge.textContent = "Soft Probe";
-          badge.className = "depth-badge soft";
-        } else if (depth === "deep_probe") {
-          badge.textContent = "Deep Probe";
-          badge.className = "depth-badge deep";
-        } else {
-          badge.textContent = depth;
-          badge.className = "depth-badge";
-        }
+      // ── RESPONSE GRID ──
+      function renderResponses(responses) {
+        const el = document.getElementById("response-grid");
+        const items = responses || [];
+        el.innerHTML = "";
+        items.forEach((r, i) => {
+          const isValidation = i >= 14;
+          const isAnswered = !!r.answer;
+          const isExtracted = r.auto_extracted === true;
+          let cls = "r-slot";
+          if (isValidation) cls += " validation";
+          if (isAnswered && isExtracted) cls += " extracted";
+          else if (isAnswered) cls += " answered";
+          const label =
+            r.question.length > 22
+              ? r.question.substring(0, 22) + "…"
+              : r.question;
+          let checkIcon = "";
+          if (isAnswered && isExtracted)
+            checkIcon = `<span class="check-teal">◈</span><span class="extract-badge">AUTO</span>`;
+          else if (isAnswered && isValidation)
+            checkIcon = `<span class="check-purple">✓</span>`;
+          else if (isAnswered) checkIcon = `<span class="check">✓</span>`;
+          const answerText = isAnswered
+            ? r.answer.length > 28
+              ? r.answer.substring(0, 28) + "…"
+              : r.answer
+            : "";
+          el.innerHTML += `
+      <div class="${cls}">
+        <div class="r-slot-label">${checkIcon} ${label}</div>
+        ${isAnswered ? `<div class="r-slot-answer">${answerText}</div>` : ""}
+      </div>`;
+        });
       }
 
-      // ══════════════════════════════════════════════
-      // CAPTURE GRID
-      // ══════════════════════════════════════════════
-      function updateCapGrid(responses) {
-        const g = document.getElementById("capGrid");
-        const pill = document.getElementById("capPill");
-        const card = document.getElementById("capCard");
-        if (!responses || !responses.length) {
-          g.innerHTML = "";
-          return;
-        }
-
-        g.innerHTML = responses
-          .map((r, i) => {
-            const ok = r.answer && r.answer.trim();
-            const isV = i >= 10; // validation probes
-            return `<div class="cap-cell ${ok ? "ok" : ""} ${isV ? "validation" : ""}">
-      ${isV ? "⟳ " : ""}${QLABELS[i] || "Q" + (i + 1)}
-    </div>`;
+      // ── TRANSCRIPT ──
+      function renderTranscript(transcript) {
+        if (!transcript || transcript.length === lastTxLength) return;
+        lastTxLength = transcript.length;
+        const el = document.getElementById("transcript");
+        el.innerHTML = transcript
+          .map((t) => {
+            const role = t.role || "system";
+            const msg = (t.message || "").replace(/</g, "&lt;");
+            return `<div class="t-row"><div class="t-role ${role}">${role.toUpperCase()}</div><div class="t-msg">${msg}</div></div>`;
           })
           .join("");
-
-        // Count only primary 10
-        const primary = responses.slice(0, 10);
-        const c = primary.filter((r) => r.answer && r.answer.trim()).length;
-        pill.textContent = c + " / 10";
-        pill.className =
-          "pill " +
-          (c === 10 ? "pill-done" : c > 0 ? "pill-live" : "pill-wait");
-        card.className = "card " + (c === 10 ? "done" : c > 0 ? "active" : "");
+        el.scrollTop = el.scrollHeight;
       }
 
-      // ══════════════════════════════════════════════
-      // CONTRADICTION CARD
-      // ══════════════════════════════════════════════
-      function updateContradictions(contradictions) {
-        const card = document.getElementById("contraCard");
-        const body = document.getElementById("contraBody");
-        const pill = document.getElementById("contraPill");
+      // ── AI STATE ──
+      function renderAIState(mode) {
+        const el = document.getElementById("ai-state");
+        el.textContent = mode || "STANDARD CLINICAL";
+        el.className = "ai-state";
+        const danger = [
+          "DE-ESCALATION",
+          "CLINICAL ADVISORY",
+          "DEEP PROBE ACTIVE",
+          "ACOUSTIC CLARIFICATION",
+          "EMPATHY CRITICAL",
+          "HESITATION DETECTED",
+        ];
+        const warning = [
+          "SOFT PROBE ACTIVE",
+          "CONTRADICTION AUDIT",
+          "EMPATHY PROTOCOL",
+          "HUMAN TRANSFER PENDING",
+        ];
+        const success = [
+          "SYNTHESIS COMPLETE",
+          "COVERAGE COMPLETE",
+          "AI DISCLOSURE HANDLED",
+        ];
+        if (danger.includes(mode)) el.classList.add("danger");
+        else if (warning.includes(mode)) el.classList.add("warning");
+        else if (success.includes(mode)) el.classList.add("success");
+        else el.classList.add("standard");
+      }
+
+      // ── SIGNAL ──
+      function renderSignal(score, depth) {
+        const el = document.getElementById("signal-score");
+        const bdg = document.getElementById("depth-badge");
+        el.textContent = score || 0;
+        el.style.color =
+          score >= 7
+            ? "var(--red)"
+            : score >= 3
+              ? "var(--orange)"
+              : "var(--blue)";
+        bdg.textContent = (depth || "standard").replace("_", " ").toUpperCase();
+        bdg.className = "depth-badge";
+        if (depth === "deep_probe") bdg.classList.add("depth-deep");
+        else if (depth === "soft_probe") bdg.classList.add("depth-soft");
+        else bdg.classList.add("depth-standard");
+      }
+
+      // ── CHURN ──
+      function renderChurn(score, risk) {
+        const fill = document.getElementById("churn-fill");
+        const label = document.getElementById("churn-risk-label");
+        const num = document.getElementById("churn-score");
+        const pct = Math.min(score || 0, 100);
+        fill.style.width = pct + "%";
+        fill.style.background =
+          pct > 60 ? "var(--red)" : pct > 30 ? "var(--orange)" : "var(--green)";
+        num.textContent = pct + "%";
+        label.textContent = risk || "—";
+        label.style.color =
+          risk === "HIGH"
+            ? "var(--red)"
+            : risk === "MEDIUM"
+              ? "var(--orange)"
+              : "var(--green)";
+      }
+
+      // ── CONTRADICTIONS ──
+      function renderContradictions(contradictions) {
+        const card = document.getElementById("contradiction-card");
+        const list = document.getElementById("contradiction-list");
         if (!contradictions || contradictions.length === 0) {
-          card.classList.add("hidden");
+          card.classList.remove("visible");
           return;
         }
-        card.classList.remove("hidden");
-        pill.textContent =
-          contradictions.length +
-          " FLAG" +
-          (contradictions.length > 1 ? "S" : "");
-        body.innerHTML = contradictions
+        card.classList.add("visible");
+        list.innerHTML = contradictions
           .map(
             (c) => `
-    <div class="contra-item">
-      <strong style="color:var(--red);font-size:9px;letter-spacing:0.05em;">
-        ${c.field_a.toUpperCase()} ↔ ${c.field_b.toUpperCase()}
-      </strong><br/>
-      ${c.summary}
+    <div class="c-item">
+      <div class="c-summary">${c.summary || ""}</div>
+      <div class="c-fields">${c.field_a} → "${c.answer_a}" vs ${c.field_b} → "${c.answer_b}"</div>
     </div>`,
           )
           .join("");
       }
 
-      // ══════════════════════════════════════════════
-      // RADAR
-      // ══════════════════════════════════════════════
-      function drawRadar(probes) {
-        const svg = d3.select("#radarSvg");
-        svg.selectAll("*").remove();
-        const W = 520,
-          H = 270,
-          cx = W / 2,
-          cy = H / 2 + 8;
-        const R = Math.min(W, H) / 2 - 52;
-        const N = 7;
-        const vals = PKEYS.map((k) =>
-          probes ? (probes[k] !== undefined ? probes[k] : 1.0) : 1.0,
-        );
-        const angles = d3
-          .range(N)
-          .map((i) => (Math.PI * 2 * i) / N - Math.PI / 2);
-        const pt = (v, i) => ({
-          x: cx + R * v * Math.cos(angles[i]),
-          y: cy + R * v * Math.sin(angles[i]),
-        });
+      // ── MULTI-EXTRACT ──
+      function renderExtracted(extracted) {
+        const card = document.getElementById("extract-card");
+        const count = document.getElementById("extract-count");
+        const list = document.getElementById("extract-list");
+        if (!extracted || extracted.length === 0) {
+          card.classList.remove("visible");
+          return;
+        }
+        card.classList.add("visible");
+        count.textContent = extracted.length;
+        list.innerHTML = extracted
+          .map((e) => `<div class="ex-item">◈ ${e.topic}: "${e.snippet}"</div>`)
+          .join("");
+      }
 
-        // Grid rings
-        [0.25, 0.5, 0.75, 1.0].forEach((r, ri) => {
+      // ── INNOVATION 1: GLP-1 RISK MATRIX ──
+      function renderGLP1Matrix(factors) {
+        const card = document.getElementById("glp1-card");
+        if (!factors || factors.length === 0) {
+          card.classList.remove("visible");
+          return;
+        }
+        card.classList.add("visible");
+
+        const activeCount = factors.filter((f) => f.active).length;
+        document.getElementById("glp1-active-count").textContent = activeCount;
+        document.getElementById("glp1-active-count").style.color =
+          activeCount >= 3
+            ? "var(--red)"
+            : activeCount >= 1
+              ? "var(--orange)"
+              : "var(--green)";
+
+        document.getElementById("glp1-factors").innerHTML = factors
+          .map(
+            (f) => `
+    <div class="glp1-factor">
+      <div class="glp1-dot ${f.active ? "" : "inactive"}"></div>
+      <div>
+        <div class="glp1-factor-label" style="color:${f.active ? "var(--text)" : "var(--text3)"}">${f.label || f.id}</div>
+        <div class="glp1-evidence">${f.evidence || ""}</div>
+      </div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      // ── INNOVATION 2: LONGITUDINAL DELTA ──
+      function renderLongitudinalDelta(delta) {
+        const card = document.getElementById("delta-card");
+        if (!delta) {
+          card.classList.remove("visible");
+          return;
+        }
+        card.classList.add("visible");
+
+        const body = document.getElementById("delta-body");
+        if (!delta.available) {
+          body.innerHTML = `<div class="delta-no-data">No previous call data provided. Add previous call summary to the left panel to enable longitudinal trend tracking.</div>`;
+          return;
+        }
+
+        const trend = (delta.trend || "STABLE").toLowerCase();
+        const arrow =
+          trend === "improving" ? "↑" : trend === "deteriorating" ? "↓" : "→";
+        const tColor =
+          trend === "improving"
+            ? "var(--green)"
+            : trend === "deteriorating"
+              ? "var(--red)"
+              : "var(--blue)";
+
+        const rows = [
+          { key: "WEIGHT", val: delta.weight_trend || "N/A" },
+          { key: "SIDE EFX", val: delta.side_effect_trend || "N/A" },
+          { key: "ENGAGEMENT", val: delta.engagement_trend || "N/A" },
+          { key: "SUPPLY", val: delta.supply_trend || "N/A" },
+        ];
+
+        const rowsHtml = rows
+          .map(
+            (r) => `
+    <div class="delta-row">
+      <div class="delta-row-key">${r.key}</div>
+      <div class="delta-row-val">${r.val}</div>
+    </div>`,
+          )
+          .join("");
+
+        const escalationHtml = delta.escalation_recommended
+          ? `<div class="delta-escalation">⚠ Escalation recommended based on deteriorating longitudinal signals</div>`
+          : "";
+
+        body.innerHTML = `
+    <div class="delta-trend">
+      <div class="delta-arrow ${trend}" style="color:${tColor}">${arrow}</div>
+      <div>
+        <div class="delta-trend-label" style="color:${tColor}">${delta.trend || "STABLE"}</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:2px">${delta.delta_summary || ""}</div>
+      </div>
+    </div>
+    <div class="delta-rows">${rowsHtml}</div>
+    ${escalationHtml}`;
+      }
+
+      // ── FORECAST ──
+      function renderForecast(forecast) {
+        const card = document.getElementById("forecast-card");
+        if (!forecast) {
+          card.classList.remove("visible");
+          return;
+        }
+        card.classList.add("visible");
+        const pct = forecast.adherence_probability || 0;
+        const pctEl = document.getElementById("forecast-pct");
+        pctEl.textContent = pct + "%";
+        pctEl.className =
+          "forecast-pct " + (pct >= 70 ? "high" : pct >= 40 ? "medium" : "low");
+        document.getElementById("forecast-label").textContent =
+          forecast.forecast_label || "";
+        document.getElementById("contact-window").textContent =
+          forecast.next_contact_window || "—";
+        document.getElementById("contact-reason").textContent =
+          forecast.contact_reason || "";
+        const factorsEl = document.getElementById("forecast-factors");
+        factorsEl.innerHTML = (forecast.top_risk_factors || [])
+          .map(
+            (f) =>
+              `<div class="forecast-factor"><div class="factor-dot"></div>${f}</div>`,
+          )
+          .join("");
+      }
+
+      // ── PRIORITY ACTIONS ──
+      function renderPriorityActions(actions) {
+        const card = document.getElementById("priority-card");
+        const el = document.getElementById("priority-actions");
+        if (!actions || actions.length === 0) {
+          card.classList.remove("visible");
+          return;
+        }
+        card.classList.add("visible");
+        el.innerHTML = actions
+          .map(
+            (a) => `
+    <div class="p-action">
+      <div class="p-urgency ${a.urgency || "MONITOR"}">${a.urgency || "MONITOR"}</div>
+      <div class="p-content">
+        <div class="p-category">${a.category || ""}</div>
+        <div class="p-text">${a.action || ""}</div>
+      </div>
+    </div>`,
+          )
+          .join("");
+      }
+
+      // ── VALIDATOR BADGE ──
+      function renderValidator(validator) {
+        if (!validator) return;
+        const row = document.getElementById("validator-row");
+        const text = document.getElementById("validator-text");
+        const badge = document.getElementById("validator-badge");
+        text.textContent = validator.validator_note || "Validation complete.";
+        if (validator.validation_passed) {
+          badge.textContent = "VALIDATED ✓";
+          badge.className = "validator-badge validator-pass";
+        } else {
+          badge.textContent = "DISCREPANCIES";
+          badge.className = "validator-badge validator-fail";
+          if (validator.discrepancies && validator.discrepancies.length > 0) {
+            text.textContent += " · " + validator.discrepancies.join("; ");
+          }
+        }
+      }
+
+      // ── INNOVATION 3: MI FIDELITY SCORE ──
+      function renderMIFidelity(miScore, miAssessment) {
+        const row = document.getElementById("mi-row");
+        const scoreEl = document.getElementById("mi-score-num");
+        const badgeEl = document.getElementById("mi-badge");
+        const assessEl = document.getElementById("mi-assessment-text");
+        if (miScore === null || miScore === undefined) return;
+        row.style.display = "flex";
+        assessEl.style.display = "block";
+        const pct = parseInt(miScore) || 0;
+        const cls = pct >= 75 ? "strong" : pct >= 50 ? "adequate" : "weak";
+        const label =
+          pct >= 75
+            ? "STRONG MI"
+            : pct >= 50
+              ? "ADEQUATE"
+              : "NEEDS IMPROVEMENT";
+        scoreEl.textContent = pct;
+        scoreEl.className = `mi-score-num ${cls}`;
+        badgeEl.textContent = label;
+        badgeEl.className = `mi-badge ${cls}`;
+        assessEl.textContent = miAssessment || "";
+      }
+
+      // ── INNOVATION 4: HESITATION FINGERPRINT ──
+      function renderHesitationFingerprint(hesitation) {
+        const card = document.getElementById("hesitation-card");
+        if (!hesitation) {
+          card.classList.remove("visible");
+          return;
+        }
+        card.classList.add("visible");
+
+        const level = (hesitation.level || "LOW").toLowerCase();
+        const idx = hesitation.hesitation_index || 0;
+
+        const indexEl = document.getElementById("hesitation-index");
+        const badgeEl = document.getElementById("hesitation-level-badge");
+        indexEl.textContent = idx.toFixed(2);
+        indexEl.className = `hesitation-index ${level}`;
+        badgeEl.textContent = hesitation.level || "LOW";
+        badgeEl.className = `hesitation-level-badge ${level}`;
+
+        document.getElementById("hesitation-metrics").innerHTML = `
+    <div class="h-metric">
+      <div class="h-metric-val">${hesitation.hedge_count || 0}</div>
+      <div class="h-metric-label">Hedge words</div>
+    </div>
+    <div class="h-metric">
+      <div class="h-metric-val">${hesitation.very_short_answers || 0}</div>
+      <div class="h-metric-label">Short answers</div>
+    </div>
+    <div class="h-metric">
+      <div class="h-metric-val">${hesitation.average_response_length || "—"}</div>
+      <div class="h-metric-label">Avg words/turn</div>
+    </div>
+    <div class="h-metric">
+      <div class="h-metric-val">${hesitation.topic_deflections || 0}</div>
+      <div class="h-metric-label">Deflections</div>
+    </div>`;
+
+        const patterns = hesitation.notable_patterns || [];
+        document.getElementById("hesitation-patterns").innerHTML = patterns
+          .map((p) => `<div class="h-pattern">${p}</div>`)
+          .join("");
+      }
+
+      // ── BEHAVIORAL PROFILE ──
+      function renderProfile(insights) {
+        if (!insights) return;
+        document.getElementById("profile-card").classList.remove("hidden");
+        document.getElementById("edge-card").classList.remove("hidden");
+        document.getElementById("soap-card").classList.remove("hidden");
+
+        document.getElementById("profile-text").textContent =
+          insights.behavioral_profile || "";
+        document.getElementById("advocate-text").textContent =
+          insights.advocate_summary || "—";
+        document.getElementById("skeptic-text").textContent =
+          insights.skeptic_summary || "—";
+        document.getElementById("arbiter-text").textContent =
+          insights.arbiter_verdict || "—";
+        document.getElementById("edge-text").textContent =
+          insights.edge_case_report || "";
+        document.getElementById("soap-text").textContent =
+          insights.soap_note || "";
+
+        renderValidator(insights.validator_result);
+        renderForecast(insights.adherence_forecast);
+        renderPriorityActions(insights.priority_actions);
+        renderMIFidelity(insights.mi_score, insights.mi_assessment);
+        renderLongitudinalDelta(insights.longitudinal_delta);
+        renderGLP1Matrix(insights.glp1_risk_factors);
+      }
+
+      // ── RADAR CHART (D3.js) — now 8 spokes ──
+      function drawRadar(probes) {
+        const keys = Object.keys(probes);
+        const vals = Object.values(probes);
+        const N = keys.length;
+        const W = 220;
+        const cx = W / 2;
+        const cy = W / 2;
+        const R = 80;
+        const levels = 4;
+        const svg = d3
+          .select("#radar-svg")
+          .attr("viewBox", `0 0 ${W} ${W}`)
+          .attr("width", "100%")
+          .attr("height", "100%");
+        svg.selectAll("*").remove();
+        const angleSlice = (Math.PI * 2) / N;
+
+        for (let l = 1; l <= levels; l++) {
+          const r = R * (l / levels);
+          const pts = keys.map((_, i) => {
+            const a = angleSlice * i - Math.PI / 2;
+            return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+          });
           svg
             .append("polygon")
-            .attr(
-              "points",
-              angles
-                .map((a) =>
-                  [cx + R * r * Math.cos(a), cy + R * r * Math.sin(a)].join(
-                    ",",
-                  ),
-                )
-                .join(" "),
-            )
+            .attr("points", pts.map((p) => p.join(",")).join(" "))
             .attr("fill", "none")
-            .attr(
-              "stroke",
-              ri === 3 ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.04)",
-            )
-            .attr("stroke-width", 1);
-        });
+            .attr("stroke", "#222")
+            .attr("stroke-width", 0.5);
+        }
 
-        // Spokes
-        angles.forEach((a) => {
+        keys.forEach((_, i) => {
+          const a = angleSlice * i - Math.PI / 2;
           svg
             .append("line")
             .attr("x1", cx)
             .attr("y1", cy)
             .attr("x2", cx + R * Math.cos(a))
             .attr("y2", cy + R * Math.sin(a))
-            .attr("stroke", "rgba(255,255,255,0.05)")
-            .attr("stroke-width", 1);
+            .attr("stroke", "#222")
+            .attr("stroke-width", 0.5);
         });
 
-        // Labels
-        angles.forEach((a, i) => {
-          const lx = cx + (R + 30) * Math.cos(a),
-            ly = cy + (R + 30) * Math.sin(a);
-          const s = vals[i];
-          const col =
-            s > 0.7
-              ? "rgba(48,209,88,0.8)"
-              : s > 0.35
-                ? "rgba(255,159,10,0.8)"
-                : "rgba(255,69,58,0.8)";
-          svg
-            .append("text")
-            .attr("x", lx)
-            .attr("y", ly)
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
-            .attr("font-family", "DM Sans, system-ui")
-            .attr("font-size", 9.5)
-            .attr("font-weight", 500)
-            .attr("fill", col)
-            .attr("letter-spacing", 0.5)
-            .text(SLABELS[i]);
+        const dataPoints = vals.map((v, i) => {
+          const a = angleSlice * i - Math.PI / 2;
+          const r = R * v;
+          return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
         });
-
-        // Percentage labels inside for degraded spokes
-        vals.forEach((v, i) => {
-          if (v < 0.95) {
-            const ip = pt(v * 0.65, i);
-            svg
-              .append("text")
-              .attr("x", ip.x)
-              .attr("y", ip.y)
-              .attr("text-anchor", "middle")
-              .attr("dominant-baseline", "middle")
-              .attr("font-family", "DM Mono, monospace")
-              .attr("font-size", 7.5)
-              .attr("fill", "rgba(255,255,255,0.3)")
-              .text(Math.round(v * 100) + "%");
-          }
-        });
-
-        // Glow filter
-        const defs = svg.append("defs");
-        const filt = defs.append("filter").attr("id", "glow");
-        filt
-          .append("feGaussianBlur")
-          .attr("stdDeviation", 3)
-          .attr("result", "blur");
-        filt
-          .append("feMerge")
-          .selectAll("feMergeNode")
-          .data(["blur", "SourceGraphic"])
-          .join("feMergeNode")
-          .attr("in", (d) => d);
-
-        // Fill polygon
-        const dpts = vals.map((v, i) => pt(v, i));
         svg
           .append("polygon")
-          .attr("points", dpts.map((p) => `${p.x},${p.y}`).join(" "))
-          .attr("fill", "rgba(10,132,255,0.07)")
-          .attr("stroke", "rgba(10,132,255,0.5)")
-          .attr("stroke-width", 1.5)
-          .attr("stroke-linejoin", "round")
-          .attr("filter", "url(#glow)");
+          .attr("points", dataPoints.map((p) => p.join(",")).join(" "))
+          .attr("fill", "rgba(10,132,255,0.12)")
+          .attr("stroke", "rgba(10,132,255,0.6)")
+          .attr("stroke-width", 1.5);
 
-        // Vertex dots
-        dpts.forEach((p, i) => {
-          const s = vals[i];
-          const col = s > 0.7 ? "#30d158" : s > 0.35 ? "#ff9f0a" : "#ff453a";
+        vals.forEach((v, i) => {
+          const a = angleSlice * i - Math.PI / 2;
+          const r = R * v;
+          // MI Fidelity probe (H) gets gold color
+          const col =
+            keys[i] === "H_mi_fidelity"
+              ? "#ffd60a"
+              : v >= 0.7
+                ? "#30d158"
+                : v >= 0.35
+                  ? "#ff9f0a"
+                  : "#ff453a";
           svg
             .append("circle")
-            .attr("cx", p.x)
-            .attr("cy", p.y)
-            .attr("r", 3.5)
+            .attr("cx", cx + r * Math.cos(a))
+            .attr("cy", cy + r * Math.sin(a))
+            .attr("r", 4)
             .attr("fill", col)
-            .attr("stroke", "#000")
-            .attr("stroke-width", 1.5)
-            .attr("filter", "url(#glow)");
+            .attr("filter", `drop-shadow(0 0 4px ${col})`);
         });
 
-        // Center
-        svg
-          .append("circle")
-          .attr("cx", cx)
-          .attr("cy", cy)
-          .attr("r", 3)
-          .attr("fill", "rgba(10,132,255,0.5)");
-      }
-      drawRadar(null);
-
-      // ══════════════════════════════════════════════
-      // WAVEFORM
-      // ══════════════════════════════════════════════
-      function startWave() {
-        const w = document.getElementById("waveWrap");
-        w.style.display = "flex";
-        w.innerHTML = "";
-        for (let i = 0; i < 64; i++) {
-          const b = document.createElement("div");
-          b.className = "wbar";
-          b.style.height = "2px";
-          w.appendChild(b);
-        }
-        const bars = w.querySelectorAll(".wbar");
-        waveIv = setInterval(() => {
-          bars.forEach((b) => {
-            const h = Math.random() * 34 + 2;
-            b.style.height = h + "px";
-            b.style.opacity = (0.3 + Math.random() * 0.5).toString();
-          });
-        }, 100);
-      }
-      function stopWave() {
-        if (waveIv) {
-          clearInterval(waveIv);
-          waveIv = null;
-        }
-        document.querySelectorAll(".wbar").forEach((b) => {
-          b.style.height = "2px";
-          b.style.opacity = "0.2";
+        keys.forEach((k, i) => {
+          const a = angleSlice * i - Math.PI / 2;
+          const lr = R + 18;
+          const shortLabel = k.split("_")[1] || k;
+          svg
+            .append("text")
+            .attr("x", cx + lr * Math.cos(a))
+            .attr("y", cy + lr * Math.sin(a))
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("font-family", "DM Mono, monospace")
+            .attr("font-size", 7)
+            .attr("fill", k === "H_mi_fidelity" ? "#ffd60a" : "#636366")
+            .text(shortLabel);
         });
-        setTimeout(() => {
-          document.getElementById("waveWrap").style.display = "none";
-        }, 600);
       }
 
-      // ══════════════════════════════════════════════
-      // TRANSCRIPT
-      // ══════════════════════════════════════════════
-      function renderTx(tx) {
-        const box = document.getElementById("txScroll");
-        const empty = document.getElementById("emptyTx");
-        if (!tx || !tx.length) {
-          if (empty) empty.style.display = "flex";
+      // ── STATUS BADGE ──
+      function setStatusBadge(state) {
+        const el = document.getElementById("status-badge");
+        if (state === "live") {
+          el.textContent = "● LIVE";
+          el.className = "header-badge badge-live";
+        } else if (state === "done") {
+          el.textContent = "✓ COMPLETE";
+          el.className = "header-badge badge-done";
+        } else {
+          el.textContent = "STANDBY";
+          el.className = "header-badge badge-ready";
+        }
+      }
+
+      // ── MAIN POLL ──
+      async function poll() {
+        try {
+          const res = await fetch("/call-state");
+          const state = await res.json();
+          lastState = state;
+
+          renderProbes(state.probes || {}, state.probe_labels || {});
+          renderResponses(state.responses || []);
+          renderTranscript(state.transcript || []);
+          renderAIState(state.agent_behavior_mode);
+          renderSignal(state.signal_score, state.interview_depth);
+          renderContradictions(state.contradictions || []);
+          renderExtracted(state.extracted_answers || []);
+          drawRadar(state.probes || {});
+
+          // Live GLP-1 risk matrix (updates during call via run_deliberation)
+          if (state.insights && state.insights.glp1_risk_factors) {
+            renderGLP1Matrix(state.insights.glp1_risk_factors);
+          } else if (state.glp1_risk_factors) {
+            renderGLP1Matrix(state.glp1_risk_factors);
+          }
+
+          if (state.insights) {
+            renderChurn(state.insights.churn_score, state.insights.risk_level);
+            renderProfile(state.insights);
+          }
+
+          // Post-call renders
+          if (state.hesitation_fingerprint) {
+            renderHesitationFingerprint(state.hesitation_fingerprint);
+          }
+
+          if (state.outcome && callActive) {
+            callActive = false;
+            animateWave(false);
+            stopTimer();
+            setStatusBadge("done");
+            document.getElementById("btn-end").classList.add("hidden");
+            document.getElementById("btn-export").classList.remove("hidden");
+            document.getElementById("btn-start").disabled = false;
+            document.getElementById("btn-start").textContent = "Begin New Call";
+          }
+        } catch (e) {
+          console.error("Poll error:", e);
+        }
+      }
+
+      // ── START CALL ──
+      async function startCall() {
+        const name = document.getElementById("patient-name").value.trim();
+        const med = document.getElementById("medication").value.trim();
+        const ctx = document.getElementById("patient-context").value.trim();
+        const prevCtx = document
+          .getElementById("previous-call-context")
+          .value.trim();
+        if (!name || !med) {
+          alert("Patient name and medication are required.");
           return;
         }
-        if (empty) empty.style.display = "none";
-        if (tx.length === lastTxLen) return;
-        lastTxLen = tx.length;
-        box.innerHTML = "";
-        tx.forEach((t) => {
-          const d = document.createElement("div");
-          const role =
-            t.role === "agent"
-              ? "agent"
-              : t.role === "system"
-                ? "system"
-                : "user";
-          d.className = "msg msg-" + role;
-          const label =
-            role === "agent"
-              ? "Jessica"
-              : role === "system"
-                ? "System"
-                : "Patient";
-          d.innerHTML = `<div class="msg-tag">${label}</div><div class="msg-body">${t.message}</div>`;
-          box.appendChild(d);
-        });
-        box.scrollTop = box.scrollHeight;
-      }
 
-      // ══════════════════════════════════════════════
-      // AI MODE
-      // ══════════════════════════════════════════════
-      function updateAIMode(mode) {
-        const el = document.getElementById("aiMode");
-        if (!mode || el.textContent === mode) return;
-        el.textContent = mode;
-        el.className =
-          mode.includes("EMPATHY") ||
-          mode.includes("DE-ESC") ||
-          mode.includes("ADVISORY") ||
-          mode.includes("DEEP PROBE")
-            ? "red"
-            : mode.includes("SOFT PROBE") || mode.includes("CONTRADICTION")
-              ? "amber"
-              : mode.includes("COVERAGE") ||
-                  mode.includes("SYNTHESIS") ||
-                  mode.includes("COMPLETE")
-                ? "green"
-                : mode.includes("CLINICAL") || mode.includes("STANDARD")
-                  ? "blue"
-                  : "";
-      }
-
-      // ══════════════════════════════════════════════
-      // DOSSIER — CHURN + INSIGHTS
-      // ══════════════════════════════════════════════
-      function updateDossier(s) {
-        updateAIMode(s.agent_behavior_mode);
-
-        if (s.insights && s.insights.churn_score !== undefined) {
-          const c = s.insights.churn_score;
-          document.getElementById("churnVal").textContent = c + "%";
-          const f = document.getElementById("churnFill");
-          f.style.width = c + "%";
-          f.style.background =
-            c > 60 ? "var(--red)" : c > 30 ? "var(--orange)" : "var(--green)";
-        }
-
-        if (!s.insights) return;
-        const ins = s.insights;
-        const isFinal =
-          ins.behavioral_profile &&
-          !ins.behavioral_profile.includes("Synthesizing") &&
-          !ins.behavioral_profile.includes("Awaiting");
-
-        if (isFinal && !bpRendered) {
-          bpRendered = true;
-
-          // ── Behavioral Profile with Arbiter verdicts ──
-          const bpBox = document.getElementById("bpBox");
-          const bpPill = document.getElementById("bpPill");
-          const bpCard = document.getElementById("bpCard");
-
-          const advocate = ins.advocate_summary || "";
-          const skeptic = ins.skeptic_summary || "";
-          const arbiter = ins.arbiter_verdict || "";
-
-          let html = `<div class="verdict-block">`;
-          if (ins.behavioral_profile) {
-            html += `<div class="verdict-summary">${ins.behavioral_profile}</div>`;
-          }
-          if (advocate) {
-            html += `<div class="verdict-row verdict-advocate">
-        <span class="verdict-tag">▲ ADVOCATE</span>${advocate}
-      </div>`;
-          }
-          if (skeptic) {
-            html += `<div class="verdict-row verdict-skeptic">
-        <span class="verdict-tag">▼ SKEPTIC</span>${skeptic}
-      </div>`;
-          }
-          if (arbiter) {
-            html += `<div class="verdict-row verdict-arbiter">
-        <span class="verdict-tag">● ARBITER VERDICT</span>${arbiter}
-      </div>`;
-          }
-          html += `</div>`;
-          bpBox.innerHTML = html;
-          bpPill.textContent = "Complete";
-          bpPill.className = "pill pill-done";
-          bpCard.className = "card done";
-
-          // ── Edge Case ──
-          document.getElementById("ecBox").textContent =
-            ins.edge_case_report || "";
-          document.getElementById("ecPill").textContent = "Complete";
-          document.getElementById("ecPill").className = "pill pill-done";
-          document.getElementById("ecCard").className = "card done";
-
-          // ── SOAP Note ──
-          document.getElementById("soapBox").textContent = ins.soap_note || "";
-          document.getElementById("soapPill").textContent = "Complete";
-          document.getElementById("soapPill").className = "pill pill-done";
-          document.getElementById("soapCard").className = "card done";
-        } else if (s.outcome && !isFinal) {
-          // Processing state
-          if (!bpRendered) {
-            document.getElementById("bpBox").innerHTML =
-              '<div class="card-body"><span style="color:var(--text-3);font-style:italic">Deliberation chamber running…</span></div>';
-            document.getElementById("ecBox").innerHTML =
-              '<span style="color:var(--text-3);font-style:italic">Compiling edge case audit…</span>';
-            document.getElementById("soapBox").innerHTML =
-              '<span style="color:var(--text-3);font-style:italic">Formatting SOAP note…</span>';
-            ["bpPill", "ecPill", "soapPill"].forEach((id) => {
-              const el = document.getElementById(id);
-              el.textContent = "Processing";
-              el.className = "pill pill-live";
-            });
-            ["bpCard", "ecCard", "soapCard"].forEach((id) => {
-              document.getElementById(id).className = "card active";
-            });
-          }
-        }
-
-        // Live edge case — show contradictions before final
-        if (!isFinal && s.contradictions && s.contradictions.length > 0) {
-          document.getElementById("ecBox").textContent = s.contradictions
-            .map((c, i) => `[FLAG ${i + 1}] ${c.summary}`)
-            .join("\n");
-          const ecP = document.getElementById("ecPill");
-          ecP.textContent =
-            s.contradictions.length +
-            " FLAG" +
-            (s.contradictions.length > 1 ? "S" : "");
-          ecP.className = "pill pill-warn";
-          document.getElementById("ecCard").className = "card flagged";
-        }
-      }
-
-      // ══════════════════════════════════════════════
-      // CALL ACTIONS
-      // ══════════════════════════════════════════════
-      async function startCall() {
-        lastTxLen = 0;
-        bpRendered = false;
-
-        const payload = {
-          patient_name: document.getElementById("patientName").value,
-          medication: document.getElementById("medication").value,
-          patient_context: document.getElementById("patientContext").value,
-        };
-
-        // Session badge
-        const sb = document.getElementById("sessB");
-        sb.className = "status-badge live";
-        document.getElementById("sessLabel").textContent = "Live";
-
-        // Dots on
-        ["rdDot", "txDot", "dDot"].forEach((id) =>
-          document.getElementById(id).classList.add("on"),
-        );
-
-        // Reset cards
-        ["bp", "ec", "soap"].forEach((id) => {
-          const box = document.getElementById(id + "Box");
-          if (id === "bp") {
-            box.innerHTML = '<div class="card-body">Awaiting synthesis…</div>';
-          } else {
-            box.textContent =
-              id === "soap"
-                ? "Connecting to EHR…"
-                : id === "ec"
-                  ? "Awaiting telemetry…"
-                  : "Awaiting synthesis…";
-          }
-          const p = document.getElementById(id + "Pill");
-          p.textContent = "Pending";
-          p.className = "pill pill-wait";
-          document.getElementById(id + "Card").className = "card";
-        });
-
-        // Reset contradiction card
-        document.getElementById("contraCard").classList.add("hidden");
-        document.getElementById("contraBody").innerHTML = "";
-
-        // Reset other UI
-        document.getElementById("aiMode").textContent = "Standard Clinical";
-        document.getElementById("aiMode").className = "blue";
-        document.getElementById("churnVal").textContent = "—";
-        document.getElementById("churnFill").style.width = "0%";
-        document.getElementById("exportBtn").style.display = "none";
-        updateSignal(0, "standard");
-
-        // Reset transcript
-        const box = document.getElementById("txScroll");
-        box.innerHTML = "";
-        const empty = document.createElement("div");
-        empty.className = "empty-state";
-        empty.id = "emptyTx";
-        empty.innerHTML =
-          '<div class="empty-icon">◎</div><div class="empty-label">Awaiting audio stream</div>';
-        box.appendChild(empty);
-
-        drawRadar(null);
-        buildProbeList();
-        updateCapGrid(null);
-        startWave();
+        // Reset UI
+        document.getElementById("transcript").innerHTML = "";
+        document.getElementById("response-grid").innerHTML = "";
+        document.getElementById("probe-array").innerHTML = "";
+        document
+          .getElementById("contradiction-card")
+          .classList.remove("visible");
+        document.getElementById("extract-card").classList.remove("visible");
+        document.getElementById("forecast-card").classList.remove("visible");
+        document.getElementById("priority-card").classList.remove("visible");
+        document.getElementById("glp1-card").classList.remove("visible");
+        document.getElementById("delta-card").classList.remove("visible");
+        document.getElementById("hesitation-card").classList.remove("visible");
+        document.getElementById("profile-card").classList.add("hidden");
+        document.getElementById("edge-card").classList.add("hidden");
+        document.getElementById("soap-card").classList.add("hidden");
+        document.getElementById("mi-row").style.display = "none";
+        document.getElementById("mi-assessment-text").style.display = "none";
+        document.getElementById("signal-score").textContent = "0";
+        document.getElementById("churn-score").textContent = "0%";
+        document.getElementById("churn-fill").style.width = "0%";
+        document.getElementById("churn-risk-label").textContent = "—";
+        lastTxLength = 0;
 
         await fetch("/api/start-call", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+          body: JSON.stringify({
+            patient_name: name,
+            medication: med,
+            patient_context: ctx,
+            previous_call_context: prevCtx,
+          }),
         });
+
+        callActive = true;
+        animateWave(true);
+        startTimer();
+        setStatusBadge("live");
+        document.getElementById("btn-start").disabled = true;
+        document.getElementById("btn-end").classList.remove("hidden");
+        document.getElementById("btn-export").classList.add("hidden");
+
+        if (pollInterval) clearInterval(pollInterval);
+        pollInterval = setInterval(poll, 800);
       }
 
+      // ── END CALL ──
       async function endCall() {
         await fetch("/api/end-call", { method: "POST" });
+        callActive = false;
+        animateWave(false);
+        stopTimer();
+        setStatusBadge("done");
+        document.getElementById("btn-end").classList.add("hidden");
+        document.getElementById("btn-export").classList.remove("hidden");
+        document.getElementById("btn-start").disabled = false;
       }
 
-      function downloadJSON() {
-        if (!currentState) return;
-        const exp = {
-          outcome: currentState.outcome || "completed",
-          call_duration: currentState.call_duration || 0,
-          direction: "outbound",
-          transcript: currentState.transcript,
-          transcript_text: currentState.transcript
-            .map((t) => `[${t.role.toUpperCase()}]: ${t.message}`)
-            .join(" "),
-          insights_derived: currentState.insights,
-          responses: currentState.responses,
-          signal_score: currentState.signal_score,
-          interview_depth: currentState.interview_depth,
-          contradictions: currentState.contradictions,
-          probes: currentState.probes,
-        };
+      // ── EXPORT ──
+      function exportJSON() {
+        if (!lastState) return;
+        const blob = new Blob([JSON.stringify(lastState, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href =
-          "data:text/json;charset=utf-8," +
-          encodeURIComponent(JSON.stringify(exp, null, 2));
-        a.download = `specter_${Date.now()}.json`;
+        a.href = url;
+        a.download = `specter-dossier-${Date.now()}.json`;
         a.click();
+        URL.revokeObjectURL(url);
       }
 
-      // ══════════════════════════════════════════════
-      // POLL — 800ms
-      // ══════════════════════════════════════════════
-      setInterval(async () => {
-        try {
-          const s = await (await fetch("/call-state?t=" + Date.now())).json();
-          currentState = s;
-
-          renderTx(s.transcript);
-          if (s.probes) {
-            drawRadar(s.probes);
-            updateProbes(s.probes);
-          }
-          updateCapGrid(s.responses);
-          updateContradictions(s.contradictions);
-          updateSignal(s.signal_score, s.interview_depth);
-          updateDossier(s);
-
-          if (s.outcome) {
-            const sb = document.getElementById("sessB");
-            sb.className = "status-badge ended";
-            document.getElementById("sessLabel").textContent =
-              s.outcome.replace(/_/g, " ");
-            ["rdDot", "txDot", "dDot"].forEach((id) =>
-              document.getElementById(id).classList.remove("on"),
-            );
-            document.getElementById("exportBtn").style.display = "block";
-            stopWave();
-          }
-        } catch (e) {}
-      }, 800);
+      // ── INIT ──
+      drawRadar({
+        A_acoustic_fidelity: 1.0,
+        B_intent_alignment: 1.0,
+        C_coverage_integrity: 1.0,
+        D_safety_compliance: 1.0,
+        E_identity_signal: 1.0,
+        F_capture_accuracy: 1.0,
+        G_behavioral_signal: 1.0,
+        H_mi_fidelity: 1.0,
+      });
+      animateWave(false);
     </script>
   </body>
 </html>
