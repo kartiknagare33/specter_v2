@@ -1,6 +1,12 @@
 # deliberation/judge.py
-# SPECTER v4 — Enhanced Deliberation Chamber
-# Innovations: GLP-1 Risk Matrix · Longitudinal Delta · MI Fidelity · Hesitation Fingerprint
+# SPECTER v5 — Full Deliberation Chamber
+#
+# v4 innovations (kept):
+#   GLP-1 Churn Risk Matrix · Longitudinal Delta · MI Fidelity · Hesitation Fingerprint
+#
+# v5 NEW:
+#   Round 5 — Next-Call Strategy Generator (closes the loop back to Layer 1)
+
 
 import os
 import json
@@ -9,75 +15,69 @@ from groq import Groq
 
 # ─────────────────────────────────────────────────────────────
 # GLP-1 SPECIFIC CHURN RISK MATRIX
-# Grounded in published clinical research:
-#   • JAMA Network Open 2025 (n=125,474 GLP-1 patients)
-#   • EASD 2025 Congress (n=77,310 Danish cohort)
-#   • Blue Health Intelligence 2024 real-world adherence data
-#   • AiCure 2024 AI adherence platform findings
-#   • PMC 2025 systematic review of adherence predictors
+# Evidence: JAMA Network Open 2025 · EASD 2025 · BHI 2024 · AiCure 2024 · PMC 2025
 # ─────────────────────────────────────────────────────────────
 GLP1_RISK_MATRIX = [
     {
-        "id":                 "gi_side_effects",
-        "label":              "GI Side Effects Present",
-        "keywords":           ["nausea", "vomiting", "diarrhea", "stomach", "constipated", "sick", "nauseated"],
-        "check_fields":       ["side_effects", "overall_feeling"],
-        "weight":             20,
-        "evidence":           "JAMA 2025: GI side effects → +9% early dropout probability"
+        "id":           "gi_side_effects",
+        "label":        "GI Side Effects Present",
+        "keywords":     ["nausea", "vomiting", "diarrhea", "stomach", "constipated", "sick", "nauseated"],
+        "check_fields": ["side_effects", "overall_feeling"],
+        "weight":       20,
+        "evidence":     "JAMA 2025: GI side effects → +9% early dropout probability"
     },
     {
-        "id":                 "pricing_barrier",
-        "label":              "Cost / Affordability Barrier",
-        "keywords":           ["expensive", "afford", "cost", "price", "insurance", "billing", "money", "can't keep"],
-        "check_fields":       ["satisfaction", "treatment_concerns", "overall_feeling"],
-        "weight":             25,
-        "evidence":           "BHI 2024: Cost burden is #1 non-clinical discontinuation driver"
+        "id":           "pricing_barrier",
+        "label":        "Cost / Affordability Barrier",
+        "keywords":     ["expensive", "afford", "cost", "price", "insurance", "billing", "money", "can't keep"],
+        "check_fields": ["satisfaction", "treatment_concerns", "overall_feeling"],
+        "weight":       25,
+        "evidence":     "BHI 2024: Cost burden is #1 non-clinical discontinuation driver"
     },
     {
-        "id":                 "weight_plateau",
-        "label":              "Weight Loss Plateau Suspected",
-        "keywords":           ["not working", "not losing", "same weight", "plateau", "stopped losing", "barely", "nothing"],
-        "check_fields":       ["satisfaction", "weight_lost"],
-        "weight":             15,
-        "evidence":           "EASD 2025: <3.6% loss in 3 months → 2.8× discontinuation risk"
+        "id":           "weight_plateau",
+        "label":        "Weight Loss Plateau Suspected",
+        "keywords":     ["not working", "not losing", "same weight", "plateau", "stopped losing", "barely", "nothing"],
+        "check_fields": ["satisfaction", "weight_lost"],
+        "weight":       15,
+        "evidence":     "EASD 2025: <3.6% loss in 3 months → 2.8× discontinuation risk"
     },
     {
-        "id":                 "low_supply",
-        "label":              "Low Medication Supply",
-        "keywords":           ["few days", "running out", "almost out", "one week", "3 days", "4 days", "5 days", "2 days"],
-        "check_fields":       ["supply_days"],
-        "weight":             20,
-        "evidence":           "Published adherence data: Supply gap is a direct proxy for adherence failure"
+        "id":           "low_supply",
+        "label":        "Low Medication Supply",
+        "keywords":     ["few days", "running out", "almost out", "one week", "3 days", "4 days", "5 days", "2 days"],
+        "check_fields": ["supply_days"],
+        "weight":       20,
+        "evidence":     "Published adherence data: Supply gap is a direct proxy for adherence failure"
     },
     {
-        "id":                 "missed_doses",
-        "label":              "Missed Doses Reported",
-        "keywords":           ["yes", "a few", "some", "couple", "forgot", "skipped", "missed"],
-        "check_fields":       ["missed_doses"],
-        "weight":             20,
-        "evidence":           "AiCure 2024: Early missed doses predict 30-day non-adherence in 73% of cases"
+        "id":           "missed_doses",
+        "label":        "Missed Doses Reported",
+        "keywords":     ["yes", "a few", "some", "couple", "forgot", "skipped", "missed"],
+        "check_fields": ["missed_doses"],
+        "weight":       20,
+        "evidence":     "AiCure 2024: Early missed doses predict 30-day non-adherence in 73% of cases"
     },
     {
-        "id":                 "treatment_concerns",
-        "label":              "Treatment Continuation Intent Concern",
-        "keywords":           ["worried", "thinking about stopping", "not sure", "concerned", "unsure", "considering stopping"],
-        "check_fields":       ["treatment_concerns", "doctor_questions"],
-        "weight":             25,
-        "evidence":           "PMC 2025: Treatment intent concerns are the strongest single churn predictor"
+        "id":           "treatment_concerns",
+        "label":        "Treatment Continuation Intent Concern",
+        "keywords":     ["worried", "thinking about stopping", "not sure", "concerned", "unsure", "considering stopping"],
+        "check_fields": ["treatment_concerns", "doctor_questions"],
+        "weight":       25,
+        "evidence":     "PMC 2025: Treatment intent concerns are the strongest single churn predictor"
     },
     {
-        "id":                 "dissatisfaction",
-        "label":              "Patient Dissatisfaction",
-        "keywords":           ["no", "not really", "not happy", "disappointed", "barely", "nothing", "not satisfied"],
-        "check_fields":       ["satisfaction"],
-        "weight":             15,
-        "evidence":           "JAMA 2025: Dissatisfaction at 3-month check-in → 1.9× 90-day dropout rate"
+        "id":           "dissatisfaction",
+        "label":        "Patient Dissatisfaction",
+        "keywords":     ["no", "not really", "not happy", "disappointed", "barely", "nothing", "not satisfied"],
+        "check_fields": ["satisfaction"],
+        "weight":       15,
+        "evidence":     "JAMA 2025: Dissatisfaction at 3-month check-in → 1.9× 90-day dropout rate"
     },
 ]
 
 
 def _get_combined_answer_text(responses: list) -> str:
-    """Returns all non-empty answers as a single lowercase string for keyword matching."""
     return " ".join(
         str(r.get("answer", "")).lower()
         for r in responses if r.get("answer")
@@ -88,17 +88,14 @@ def run_deliberation(answers: dict, transcript: list,
                      strategy_log: list, is_live: bool = False) -> dict:
     """
     Fast live-call deliberation — rule-based, no LLM, runs after every log_answer.
-    Uses GLP-1-specific evidence-anchored risk matrix instead of generic weights.
-    Returns lightweight result used for live churn meter and GLP-1 risk factor display.
+    Uses GLP-1 evidence-anchored risk matrix.
     """
-    churn = 10
+    churn              = 10
     active_risk_factors = []
 
-    # Build combined text from all current answers for keyword matching
     combined_text = " ".join(str(v).lower() for v in answers.values() if v)
 
     for risk in GLP1_RISK_MATRIX:
-        # Check relevant fields first, then fall back to combined text
         field_text = ""
         for field in risk["check_fields"]:
             field_text += " " + str(answers.get(field, "")).lower()
@@ -131,6 +128,7 @@ def run_deliberation(answers: dict, transcript: list,
         "longitudinal_delta":     None,
         "mi_fidelity_metrics":    None,
         "hesitation_fingerprint": None,
+        "next_call_strategy":     None,
     }
 
 
@@ -148,20 +146,25 @@ def run_final_llm_deliberation(
     previous_call_context: str = "",
     mi_metrics: dict = None,
     hesitation_data: dict = None,
+    patient_id: str = "",
 ) -> dict:
     """
-    Full 4-round post-call deliberation.
-    Rounds: Advocate → Skeptic → Arbiter → Validator
+    Full 5-round post-call deliberation.
+    Rounds: Advocate → Skeptic → Arbiter → Validator → Next-Call Strategy
 
-    Innovations implemented:
-      1. GLP-1 Churn Risk Matrix  — Arbiter outputs evidence-anchored GLP-1 risk factors
-      2. Longitudinal Risk Delta  — Compares current call to previous call context (if provided)
-      3. MI Fidelity Score        — Arbiter evaluates agent's Motivational Interviewing quality
-      4. Hesitation Fingerprint   — Arbiter factors patient linguistic hesitation patterns
+    v4 innovations:
+      1. GLP-1 Churn Risk Matrix
+      2. Longitudinal Risk Delta
+      3. MI Fidelity Score
+      4. Hesitation Fingerprint
+
+    v5 NEW:
+      5. Next-Call Strategy — writes pre-call brief for the NEXT interaction
+         Closes the loop: deliberation output → patient DB → Layer 1 input
     """
     print("DELIBERATION CHAMBER OPENING...")
-    client     = Groq(api_key=os.getenv("GROQ_API_KEY"))
-    sorted_tx  = sorted(transcript, key=lambda x: x.get("timestamp", 0))
+    client    = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    sorted_tx = sorted(transcript, key=lambda x: x.get("timestamp", 0))
 
     base_data = f"""
 CALL TRANSCRIPT:
@@ -171,7 +174,6 @@ STRUCTURED RESPONSES:
 {json.dumps(responses, indent=2)}
 """
 
-    # ── Build optional context sections ──
     longitudinal_section = (
         f"\nPREVIOUS CALL CONTEXT (for longitudinal comparison):\n{previous_call_context}\n"
         if previous_call_context and previous_call_context.strip() else ""
@@ -283,10 +285,10 @@ CRITICAL OUTPUT RULES:
 - adherence_probability: integer 0-100
 - next_contact_window: exactly "7 days", "14 days", or "30 days"
 - priority_actions: exactly 3 items
-- glp1_risk_factors: ONLY factors with actual transcript evidence — cite evidence label
+- glp1_risk_factors: ONLY factors with actual transcript evidence
 - longitudinal_delta: compare to previous call if available
-- mi_score: integer 0-100 (agent MI quality)
-- hesitation_index: float 0-1 (patient hesitation level from data above)
+- mi_score: integer 0-100
+- hesitation_index: float 0-1
 
 Return ONLY valid JSON:
 {{
@@ -303,7 +305,7 @@ Return ONLY valid JSON:
     "forecast_label": "one sentence 30-day prediction",
     "top_risk_factors": ["factor 1", "factor 2", "factor 3"],
     "next_contact_window": "7 days or 14 days or 30 days",
-    "contact_reason": "one sentence reason for this contact window"
+    "contact_reason": "one sentence reason"
   }},
   "priority_actions": [
     {{"urgency": "URGENT", "category": "Refill/Safety/Billing/Follow-up/Escalation", "action": "specific instruction"}},
@@ -324,7 +326,7 @@ Return ONLY valid JSON:
     "escalation_recommended": true or false
   }},
   "mi_score": <integer 0-100>,
-  "mi_assessment": "one sentence on agent Motivational Interviewing quality"
+  "mi_assessment": "one sentence on agent MI quality"
 }}
 {base_data}{hesitation_section}"""}],
             temperature=0.2,
@@ -350,17 +352,17 @@ Return ONLY valid JSON:
                 "forecast_label":        "Forecast unavailable.",
                 "top_risk_factors":      [],
                 "next_contact_window":   "14 days",
-                "contact_reason":        "Default fallback — deliberation error."
+                "contact_reason":        "Default fallback."
             },
             "priority_actions": [
-                {"urgency": "REVIEW",  "category": "Follow-up", "action": "Manual review required — deliberation error."},
-                {"urgency": "MONITOR", "category": "Follow-up", "action": "Verify call transcript and re-run analysis."},
+                {"urgency": "REVIEW",  "category": "Follow-up", "action": "Manual review required."},
+                {"urgency": "MONITOR", "category": "Follow-up", "action": "Verify transcript and re-run analysis."},
                 {"urgency": "MONITOR", "category": "Follow-up", "action": "Confirm patient received refill."},
             ],
             "glp1_risk_factors":   [],
             "longitudinal_delta":  {"available": False, "trend": "N/A", "delta_summary": "No previous data."},
             "mi_score":            50,
-            "mi_assessment":       "Assessment unavailable due to deliberation error."
+            "mi_assessment":       "Assessment unavailable."
         }
 
     # ──────────────────────────────────────────────
@@ -380,7 +382,7 @@ Look for:
 3. Signals in transcript the Arbiter missed entirely
 4. Priority actions not grounded in patient statements
 5. GLP-1 risk factors flagged without transcript support
-6. longitudinal_delta conclusions not supported by the provided previous call context
+6. longitudinal_delta conclusions not supported by provided previous call context
 
 Return ONLY valid JSON:
 {{
@@ -407,7 +409,58 @@ Return ONLY valid JSON:
         }
 
     # ──────────────────────────────────────────────
-    # FLATTEN ALL STRING FIELDS
+    # ROUND 5 — NEXT-CALL STRATEGY (NEW v5)
+    # Closes the loop: writes the pre-call brief for the NEXT interaction.
+    # Saved to patient DB by main.py after deliberation completes.
+    # ──────────────────────────────────────────────
+    print("  Round 5: Next-Call Strategy...")
+    next_call_strategy = ""
+    next_call_strategy_structured = None
+    try:
+        r = client.chat.completions.create(
+            model="llama-3.1-8b-instant",
+            messages=[{"role": "user", "content": f"""You are a senior clinical strategist at TrimRX.
+This call just ended. Based on everything that happened, write the pre-call brief 
+for the NEXT interaction with this patient.
+
+Current call summary:
+- Risk level: {result.get('risk_level')}
+- Churn score: {result.get('churn_score')}%
+- Arbiter verdict: {result.get('arbiter_verdict')}
+- Active GLP-1 risk factors: {json.dumps([f['label'] for f in result.get('glp1_risk_factors', [])])}
+- Priority actions: {json.dumps([a['action'] for a in result.get('priority_actions', [])])}
+- MI score (agent quality): {result.get('mi_score')}
+- Longitudinal trend: {result.get('longitudinal_delta', {}).get('trend', 'N/A')}
+
+Return ONLY valid JSON:
+{{
+  "next_call_strategy": "4-line brief: (1) expected emotional state, (2) first topic to address, (3) sensitive topics to approach carefully, (4) specialist to have on standby",
+  "open_loops": ["unresolved issue 1", "unresolved issue 2"],
+  "recommended_opening": "Exact suggested opening line for the next call",
+  "risk_watch_flags": ["flag to monitor 1", "flag to monitor 2"],
+  "suggested_question_priority": ["topic_key_1", "topic_key_2", "topic_key_3"]
+}}
+{base_data}"""}],
+            temperature=0.3,
+            response_format={"type": "json_object"}
+        ).choices[0].message.content
+        next_call_strategy_structured = json.loads(r)
+        next_call_strategy = next_call_strategy_structured.get("next_call_strategy", "")
+        print(f"  Round 5: Next-call strategy generated.")
+        print(f"    → {next_call_strategy[:80]}...")
+    except Exception as e:
+        print(f"  Round 5 failed: {e}")
+        next_call_strategy = "Standard follow-up. Monitor churn indicators from this call."
+        next_call_strategy_structured = {
+            "next_call_strategy":           next_call_strategy,
+            "open_loops":                   [],
+            "recommended_opening":          "Hi, this is Jessica from TrimRX. How have you been since our last call?",
+            "risk_watch_flags":             [],
+            "suggested_question_priority":  [],
+        }
+
+    # ──────────────────────────────────────────────
+    # FLATTEN STRING FIELDS
     # ──────────────────────────────────────────────
     result["soap_note"]          = _flatten(result.get("soap_note"),          "No SOAP note generated.")
     result["edge_case_report"]   = _flatten(result.get("edge_case_report"),   "Standard flow.")
@@ -439,8 +492,8 @@ Return ONLY valid JSON:
 
     if not isinstance(result.get("longitudinal_delta"), dict):
         result["longitudinal_delta"] = {
-            "available": False,
-            "trend": "N/A",
+            "available":    False,
+            "trend":        "N/A",
             "delta_summary": "No previous call data was provided for comparison."
         }
 
@@ -450,11 +503,12 @@ Return ONLY valid JSON:
         except Exception:
             result["mi_score"] = 50
 
-    # Attach hesitation fingerprint
     if hesitation_data:
         result["hesitation_fingerprint"] = hesitation_data
 
-    result["validator_result"] = validator
+    result["validator_result"]              = validator
+    result["next_call_strategy"]            = next_call_strategy
+    result["next_call_strategy_structured"] = next_call_strategy_structured
 
     print("DELIBERATION CHAMBER CLOSED.")
     return result

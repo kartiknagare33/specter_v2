@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SPECTER — Clinical Intelligence Dashboard v4</title>
+    <title>SPECTER — Clinical Intelligence Dashboard v5</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
@@ -22,6 +22,7 @@
         --purple: #bf5af2;
         --teal: #5ac8fa;
         --gold: #ffd60a;
+        --amber: #ff9f0a;
         --text: #ffffff;
         --text2: #8e8e93;
         --text3: #48484a;
@@ -338,7 +339,7 @@
 
       /* ── TRANSCRIPT ── */
       .transcript-scroll {
-        height: 280px;
+        height: 220px;
         overflow-y: auto;
         padding-right: 4px;
       }
@@ -562,7 +563,7 @@
         margin-bottom: 3px;
       }
 
-      /* ── GLP-1 RISK MATRIX CARD (NEW v4) ── */
+      /* ── GLP-1 RISK MATRIX CARD ── */
       .glp1-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -632,7 +633,7 @@
         color: var(--red);
       }
 
-      /* ── LONGITUDINAL DELTA CARD (NEW v4) ── */
+      /* ── LONGITUDINAL DELTA CARD ── */
       .delta-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -717,7 +718,7 @@
         font-style: italic;
       }
 
-      /* ── HESITATION FINGERPRINT CARD (NEW v4) ── */
+      /* ── HESITATION FINGERPRINT CARD ── */
       .hesitation-card {
         background: rgba(255, 159, 10, 0.03);
         border: 1px solid rgba(255, 159, 10, 0.15);
@@ -1053,7 +1054,7 @@
         white-space: pre-wrap;
       }
 
-      /* ── MI FIDELITY BADGE (inline in profile card) ── */
+      /* ── MI FIDELITY ── */
       .mi-row {
         display: flex;
         align-items: center;
@@ -1105,6 +1106,344 @@
         background: rgba(255, 159, 10, 0.08);
       }
 
+      /* ══════════════════════════════════════════
+     NEW v5 STYLES
+  ══════════════════════════════════════════ */
+
+      /* ── PRE-CALL BRIEF CARD ── */
+      .precall-card {
+        background: rgba(191, 90, 242, 0.04);
+        border: 1px solid rgba(191, 90, 242, 0.25);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+        animation: fadeIn 0.4s ease;
+      }
+      .precall-card.visible {
+        display: block;
+      }
+      .precall-brief-text {
+        font-size: 11px;
+        color: var(--text);
+        line-height: 1.7;
+        white-space: pre-line;
+        margin-bottom: 10px;
+      }
+      .precall-meta {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+      .precall-tag {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 3px 8px;
+        border-radius: 10px;
+        border: 1px solid;
+        letter-spacing: 0.5px;
+      }
+      .precall-tag.risk-high {
+        color: var(--red);
+        border-color: var(--red);
+        background: rgba(255, 69, 58, 0.08);
+      }
+      .precall-tag.risk-medium {
+        color: var(--orange);
+        border-color: var(--orange);
+        background: rgba(255, 159, 10, 0.08);
+      }
+      .precall-tag.risk-low {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.08);
+      }
+      .precall-tag.sensitivity {
+        color: var(--purple);
+        border-color: var(--purple);
+        background: rgba(191, 90, 242, 0.08);
+      }
+
+      /* ── LIVING MEMORY PANEL ── */
+      .memory-card {
+        background: rgba(10, 132, 255, 0.03);
+        border: 1px solid rgba(10, 132, 255, 0.2);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+      }
+      .memory-card.visible {
+        display: block;
+      }
+      .memory-coverage-bar {
+        height: 4px;
+        background: var(--bg3);
+        border-radius: 2px;
+        overflow: hidden;
+        margin: 8px 0 12px;
+      }
+      .memory-coverage-fill {
+        height: 100%;
+        background: var(--blue);
+        border-radius: 2px;
+        transition: width 0.5s ease;
+      }
+      .memory-q-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 12px;
+      }
+      .memory-q-pill {
+        font-family: "DM Mono", monospace;
+        font-size: 8px;
+        padding: 3px 7px;
+        border-radius: 10px;
+        border: 1px solid;
+        letter-spacing: 0.3px;
+        transition: all 0.3s;
+      }
+      .memory-q-pill.pending {
+        color: var(--text3);
+        border-color: var(--border);
+        background: var(--bg3);
+      }
+      .memory-q-pill.answered {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.08);
+      }
+      .memory-flags-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        margin-bottom: 10px;
+      }
+      .memory-flag {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 3px 8px;
+        border-radius: 10px;
+        border: 1px solid var(--orange);
+        color: var(--orange);
+        background: rgba(255, 159, 10, 0.08);
+        animation: fadeIn 0.3s ease;
+      }
+      .memory-flag.safety {
+        color: var(--red);
+        border-color: var(--red);
+        background: rgba(255, 69, 58, 0.08);
+      }
+      .memory-flag.pricing {
+        color: var(--orange);
+        border-color: var(--orange);
+        background: rgba(255, 159, 10, 0.08);
+      }
+      .memory-flag.reschedule {
+        color: var(--teal);
+        border-color: var(--teal);
+        background: rgba(90, 200, 250, 0.08);
+      }
+      .memory-next-action {
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        letter-spacing: 1px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border-left: 3px solid var(--blue);
+        color: var(--blue);
+        background: rgba(10, 132, 255, 0.06);
+        text-transform: uppercase;
+        margin-top: 8px;
+      }
+      .memory-next-action.handoff {
+        border-color: var(--orange);
+        color: var(--orange);
+        background: rgba(255, 159, 10, 0.06);
+      }
+      .memory-next-action.escalate {
+        border-color: var(--red);
+        color: var(--red);
+        background: rgba(255, 69, 58, 0.06);
+      }
+      .memory-next-action.close {
+        border-color: var(--green);
+        color: var(--green);
+        background: rgba(48, 209, 88, 0.06);
+      }
+      .memory-emotional-badge {
+        display: inline-block;
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 1px solid;
+        letter-spacing: 0.5px;
+        margin-left: 6px;
+      }
+      .memory-emotional-badge.neutral {
+        color: var(--text2);
+        border-color: var(--border);
+      }
+      .memory-emotional-badge.concerned {
+        color: var(--orange);
+        border-color: var(--orange);
+        background: rgba(255, 159, 10, 0.08);
+      }
+      .memory-emotional-badge.distressed {
+        color: var(--red);
+        border-color: var(--red);
+        background: rgba(255, 69, 58, 0.08);
+      }
+      .memory-emotional-badge.engaged {
+        color: var(--green);
+        border-color: var(--green);
+        background: rgba(48, 209, 88, 0.08);
+      }
+
+      /* ── GHOST ANALYST FEED ── */
+      .ghost-card {
+        background: rgba(255, 159, 10, 0.02);
+        border: 1px solid rgba(255, 159, 10, 0.18);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+      }
+      .ghost-card.visible {
+        display: block;
+      }
+      .ghost-feed {
+        max-height: 180px;
+        overflow-y: auto;
+        padding-right: 4px;
+      }
+      .ghost-feed::-webkit-scrollbar {
+        width: 3px;
+      }
+      .ghost-feed::-webkit-scrollbar-thumb {
+        background: rgba(255, 159, 10, 0.3);
+        border-radius: 2px;
+      }
+      .ghost-alert {
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+        padding: 7px 0;
+        border-bottom: 1px solid rgba(255, 159, 10, 0.08);
+        animation: fadeIn 0.4s ease;
+      }
+      .ghost-alert:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      .ghost-time {
+        font-family: "DM Mono", monospace;
+        font-size: 8px;
+        color: var(--text3);
+        white-space: nowrap;
+        padding-top: 2px;
+        min-width: 36px;
+      }
+      .ghost-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--orange);
+        flex-shrink: 0;
+        margin-top: 5px;
+      }
+      .ghost-dot.HIGH {
+        background: var(--red);
+      }
+      .ghost-dot.MEDIUM {
+        background: var(--orange);
+      }
+      .ghost-dot.LOW {
+        background: var(--green);
+      }
+      .ghost-text {
+        font-size: 11px;
+        color: var(--orange);
+        line-height: 1.5;
+        flex: 1;
+      }
+      .ghost-text.HIGH {
+        color: var(--red);
+      }
+      .ghost-text.LOW {
+        color: var(--teal);
+      }
+
+      /* ── NEXT-CALL STRATEGY CARD ── */
+      .next-call-card {
+        background: rgba(191, 90, 242, 0.04);
+        border: 1px solid rgba(191, 90, 242, 0.3);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        display: none;
+        animation: fadeIn 0.6s ease;
+      }
+      .next-call-card.visible {
+        display: block;
+      }
+      .next-call-strategy-text {
+        font-size: 12px;
+        color: var(--text);
+        line-height: 1.7;
+        white-space: pre-line;
+        margin-bottom: 12px;
+      }
+      .next-call-section {
+        margin-bottom: 10px;
+      }
+      .next-call-section-label {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--purple);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+      }
+      .next-call-opening {
+        font-size: 11px;
+        color: var(--text2);
+        font-style: italic;
+        padding: 8px 10px;
+        background: var(--bg3);
+        border-radius: 6px;
+        border-left: 2px solid var(--purple);
+        line-height: 1.5;
+      }
+      .next-call-loop-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: rgba(191, 90, 242, 0.06);
+        border: 1px solid rgba(191, 90, 242, 0.2);
+        border-radius: 6px;
+        margin-top: 10px;
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--purple);
+        letter-spacing: 1px;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(4px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
       /* ── HIDDEN ── */
       .hidden {
         display: none !important;
@@ -1118,7 +1457,7 @@
         <div>
           <div class="logo">SPECTER</div>
           <div class="logo-sub">
-            CLINICAL INTELLIGENCE PLATFORM · TRIMRX · V4
+            CLINICAL INTELLIGENCE PLATFORM · TRIMRX · V5 · LIVING MEMORY
           </div>
         </div>
         <div class="header-badge badge-ready" id="status-badge">STANDBY</div>
@@ -1184,6 +1523,8 @@
             Patient Configuration
             <div class="card-title-dot" id="config-dot"></div>
           </div>
+          <div class="field-label">Patient ID</div>
+          <input class="field-input" id="patient-id" value="elena_vance" />
           <div class="field-label">Patient Name</div>
           <input class="field-input" id="patient-name" value="Elena Vance" />
           <div class="field-label">Medication</div>
@@ -1198,20 +1539,27 @@
             id="patient-context"
             value="Target weight: 150 lbs. On treatment 3 months."
           />
-          <!-- NEW v4: Previous call context for longitudinal delta -->
           <div class="field-label" style="color: var(--purple)">
             Previous Call Context
             <span style="color: var(--text3); font-size: 9px; letter-spacing: 0"
-              >(optional — enables longitudinal delta)</span
+              >(auto-loaded from DB if blank)</span
             >
           </div>
           <input
             class="field-input"
             id="previous-call-context"
             style="border-color: rgba(191, 90, 242, 0.3)"
-            placeholder="e.g. Weight 188 lbs, lost 4 lbs, mild nausea, satisfied, no concerns."
+            placeholder="Auto-populated from patient DB"
             value=""
           />
+          <button
+            class="btn btn-ghost"
+            id="btn-brief"
+            onclick="generateBrief()"
+            style="margin-bottom: 8px"
+          >
+            ⚡ Generate Pre-Call Brief
+          </button>
           <button class="btn btn-primary" id="btn-start" onclick="startCall()">
             Begin Triage Call
           </button>
@@ -1229,6 +1577,27 @@
           >
             Export JSON Dossier
           </button>
+        </div>
+
+        <!-- NEW v5: Pre-Call Brief Card -->
+        <div class="precall-card" id="precall-card">
+          <div
+            class="card-title"
+            style="color: var(--purple); margin-bottom: 8px"
+          >
+            Pre-Call Clinical Brief
+            <div
+              class="card-title-dot"
+              style="
+                background: var(--purple);
+                box-shadow: 0 0 6px var(--purple);
+              "
+            ></div>
+          </div>
+          <div class="precall-brief-text" id="precall-brief-text">
+            Generating strategy...
+          </div>
+          <div class="precall-meta" id="precall-meta"></div>
         </div>
 
         <!-- Signal Score -->
@@ -1258,7 +1627,7 @@
           </div>
         </div>
 
-        <!-- Probe Array (now 8 probes including H) -->
+        <!-- Probe Array -->
         <div class="card">
           <div class="card-title">
             SPECTER Probes
@@ -1280,7 +1649,7 @@
           <div id="extract-list"></div>
         </div>
 
-        <!-- NEW v4: Hesitation Fingerprint (left panel, below extract card) -->
+        <!-- Hesitation Fingerprint -->
         <div class="hesitation-card" id="hesitation-card">
           <div
             class="card-title"
@@ -1329,6 +1698,108 @@
             <div class="card-title-dot live" id="tx-dot"></div>
           </div>
           <div class="transcript-scroll" id="transcript"></div>
+        </div>
+
+        <!-- NEW v5: Ghost Analyst Feed -->
+        <div class="ghost-card" id="ghost-card">
+          <div
+            class="card-title"
+            style="color: var(--orange); margin-bottom: 8px"
+          >
+            Ghost Analyst — Live Observations
+            <div
+              class="card-title-dot live"
+              style="
+                background: var(--orange);
+                box-shadow: 0 0 6px var(--orange);
+              "
+            ></div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: var(--text3);
+              margin-bottom: 8px;
+              font-family: &quot;DM Mono&quot;, monospace;
+              letter-spacing: 0.5px;
+            "
+          >
+            PARALLEL AI WATCHING THE CALL IN REAL TIME
+          </div>
+          <div class="ghost-feed" id="ghost-feed"></div>
+        </div>
+
+        <!-- NEW v5: Living Memory Panel -->
+        <div class="memory-card" id="memory-card">
+          <div
+            class="card-title"
+            style="color: var(--blue); margin-bottom: 8px"
+          >
+            Living Memory — Clinical Brain
+            <div
+              class="card-title-dot live"
+              style="background: var(--blue); box-shadow: 0 0 6px var(--blue)"
+            ></div>
+          </div>
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 4px;
+            "
+          >
+            <div style="font-size: 10px; color: var(--text2)">Coverage</div>
+            <div
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 11px;
+                color: var(--blue);
+              "
+              id="memory-coverage-pct"
+            >
+              0%
+            </div>
+          </div>
+          <div class="memory-coverage-bar">
+            <div
+              class="memory-coverage-fill"
+              id="memory-coverage-fill"
+              style="width: 0%"
+            ></div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: var(--text2);
+              margin-bottom: 6px;
+              display: flex;
+              align-items: center;
+            "
+          >
+            EMOTIONAL STATE
+            <span
+              class="memory-emotional-badge neutral"
+              id="memory-emotional-badge"
+              >NEUTRAL</span
+            >
+          </div>
+          <div style="font-size: 9px; color: var(--text2); margin-bottom: 5px">
+            QUESTIONS (14 PRIMARY)
+          </div>
+          <div class="memory-q-grid" id="memory-q-grid"></div>
+          <div style="font-size: 9px; color: var(--text2); margin-bottom: 5px">
+            DETECTED FLAGS
+          </div>
+          <div class="memory-flags-row" id="memory-flags-row">
+            <span
+              style="font-size: 10px; color: var(--text3); font-style: italic"
+              >None yet</span
+            >
+          </div>
+          <div class="memory-next-action" id="memory-next-action">
+            AWAITING CALL START
+          </div>
         </div>
       </div>
 
@@ -1385,7 +1856,7 @@
           </div>
         </div>
 
-        <!-- NEW v4: GLP-1 Risk Matrix -->
+        <!-- GLP-1 Risk Matrix -->
         <div class="glp1-card" id="glp1-card">
           <div class="card-title" style="margin-bottom: 6px">
             GLP-1 Risk Matrix
@@ -1433,7 +1904,7 @@
           <div id="contradiction-list"></div>
         </div>
 
-        <!-- NEW v4: Longitudinal Delta -->
+        <!-- Longitudinal Delta -->
         <div class="delta-card" id="delta-card">
           <div class="card-title" style="margin-bottom: 10px">
             Longitudinal Risk Delta
@@ -1487,6 +1958,43 @@
           <div id="priority-actions"></div>
         </div>
 
+        <!-- NEW v5: Next-Call Strategy Card -->
+        <div class="next-call-card" id="next-call-card">
+          <div
+            class="card-title"
+            style="color: var(--purple); margin-bottom: 8px"
+          >
+            Next-Call Strategy — Round 5
+            <div class="card-title-dot" style="background: var(--purple)"></div>
+          </div>
+          <div
+            style="
+              font-size: 9px;
+              color: var(--text3);
+              font-family: &quot;DM Mono&quot;, monospace;
+              letter-spacing: 0.5px;
+              margin-bottom: 10px;
+            "
+          >
+            GENERATED FOR THE NEXT INTERACTION WITH THIS PATIENT
+          </div>
+          <div
+            class="next-call-strategy-text"
+            id="next-call-strategy-text"
+          ></div>
+          <div
+            class="next-call-section"
+            id="next-call-opening-section"
+            style="display: none"
+          >
+            <div class="next-call-section-label">Recommended opening</div>
+            <div class="next-call-opening" id="next-call-opening-text"></div>
+          </div>
+          <div class="next-call-loop-indicator">
+            ↻ SAVED TO PATIENT DB · SEEDS NEXT PRE-CALL BRIEF · LOOP CLOSED
+          </div>
+        </div>
+
         <!-- Behavioral Profile -->
         <div class="card hidden" id="profile-card">
           <div class="card-title">
@@ -1494,8 +2002,6 @@
             <div class="card-title-dot blue"></div>
           </div>
           <div class="profile-text" id="profile-text"></div>
-
-          <!-- NEW v4: MI Fidelity Score inside profile card -->
           <div class="mi-row" id="mi-row" style="display: none">
             <div>
               <div class="mi-score-num strong" id="mi-score-num">—</div>
@@ -1524,7 +2030,6 @@
               display: none;
             "
           ></div>
-
           <div class="voice-row">
             <div class="voice-box advocate">
               <div class="voice-label">Advocate</div>
@@ -1573,11 +2078,13 @@
     <script>
       // ── STATE ──
       let pollInterval = null;
+      let memoryPollInterval = null;
       let callActive = false;
       let lastTxLength = 0;
       let lastState = null;
       let timerSecs = 0;
       let timerInterval = null;
+      let lastGhostCount = 0;
 
       // ── WAVEFORM INIT ──
       (function initWaveform() {
@@ -1590,37 +2097,28 @@
         }
       })();
 
-      // ── WAVEFORM ANIMATION ──
       let waveTimer = null;
       function animateWave(active) {
         const bars = document.querySelectorAll(".wave-bar");
         if (waveTimer) clearInterval(waveTimer);
         if (!active) {
-          bars.forEach((b) => {
-            b.style.height = "3px";
-            b.style.background = "var(--text3)";
-          });
+          bars.forEach((b) => (b.style.height = "3px"));
           return;
         }
         waveTimer = setInterval(() => {
           bars.forEach((b) => {
-            const h = Math.floor(Math.random() * 32) + 3;
-            b.style.height = h + "px";
-            b.style.background =
-              h > 22 ? "var(--red)" : h > 14 ? "var(--orange)" : "var(--blue)";
+            b.style.height = Math.random() * 32 + 3 + "px";
           });
-        }, 80);
+        }, 100);
       }
 
-      // ── TIMER ──
       function startTimer() {
         timerSecs = 0;
+        if (timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
           timerSecs++;
-          const m = Math.floor(timerSecs / 60)
-            .toString()
-            .padStart(2, "0");
-          const s = (timerSecs % 60).toString().padStart(2, "0");
+          const m = String(Math.floor(timerSecs / 60)).padStart(2, "0");
+          const s = String(timerSecs % 60).padStart(2, "0");
           document.getElementById("call-timer").textContent = `${m}:${s}`;
         }, 1000);
       }
@@ -1628,154 +2126,113 @@
         if (timerInterval) clearInterval(timerInterval);
       }
 
-      // ── PROBES ──
+      // ── RENDER FUNCTIONS ──
       function renderProbes(probes, labels) {
         const el = document.getElementById("probe-array");
-        el.innerHTML = "";
-        Object.entries(probes).forEach(([key, val]) => {
-          const label =
-            labels && labels[key] ? labels[key] : key.split("_")[1] || key;
-          const pct = Math.round(val * 100);
-          const color =
-            val >= 0.7
-              ? "var(--green)"
-              : val >= 0.35
-                ? "var(--orange)"
-                : "var(--red)";
-          // MI Fidelity probe gets gold accent label
-          const labelColor = key === "H_mi_fidelity" ? "var(--gold)" : "";
-          el.innerHTML += `
-      <div class="probe-row">
-        <div class="probe-label" style="color:${labelColor || "var(--text2)"}">${label}</div>
-        <div class="probe-track"><div class="probe-fill" style="width:${pct}%;background:${color}"></div></div>
-        <div class="probe-val" style="color:${color}">${val.toFixed(2)}</div>
-      </div>`;
-        });
-      }
-
-      // ── RESPONSE GRID ──
-      function renderResponses(responses) {
-        const el = document.getElementById("response-grid");
-        const items = responses || [];
-        el.innerHTML = "";
-        items.forEach((r, i) => {
-          const isValidation = i >= 14;
-          const isAnswered = !!r.answer;
-          const isExtracted = r.auto_extracted === true;
-          let cls = "r-slot";
-          if (isValidation) cls += " validation";
-          if (isAnswered && isExtracted) cls += " extracted";
-          else if (isAnswered) cls += " answered";
-          const label =
-            r.question.length > 22
-              ? r.question.substring(0, 22) + "…"
-              : r.question;
-          let checkIcon = "";
-          if (isAnswered && isExtracted)
-            checkIcon = `<span class="check-teal">◈</span><span class="extract-badge">AUTO</span>`;
-          else if (isAnswered && isValidation)
-            checkIcon = `<span class="check-purple">✓</span>`;
-          else if (isAnswered) checkIcon = `<span class="check">✓</span>`;
-          const answerText = isAnswered
-            ? r.answer.length > 28
-              ? r.answer.substring(0, 28) + "…"
-              : r.answer
-            : "";
-          el.innerHTML += `
-      <div class="${cls}">
-        <div class="r-slot-label">${checkIcon} ${label}</div>
-        ${isAnswered ? `<div class="r-slot-answer">${answerText}</div>` : ""}
-      </div>`;
-        });
-      }
-
-      // ── TRANSCRIPT ──
-      function renderTranscript(transcript) {
-        if (!transcript || transcript.length === lastTxLength) return;
-        lastTxLength = transcript.length;
-        const el = document.getElementById("transcript");
-        el.innerHTML = transcript
-          .map((t) => {
-            const role = t.role || "system";
-            const msg = (t.message || "").replace(/</g, "&lt;");
-            return `<div class="t-row"><div class="t-role ${role}">${role.toUpperCase()}</div><div class="t-msg">${msg}</div></div>`;
+        el.innerHTML = Object.entries(probes)
+          .map(([k, v]) => {
+            const pct = Math.round(v * 100);
+            const label = labels[k] || k;
+            const color =
+              v >= 0.7
+                ? "var(--green)"
+                : v >= 0.35
+                  ? "var(--orange)"
+                  : "var(--red)";
+            const isGold = k === "H_mi_fidelity";
+            return `<div class="probe-row">
+      <div class="probe-label" style="${isGold ? "color:var(--gold)" : ""}">${label}</div>
+      <div class="probe-track">
+        <div class="probe-fill" style="width:${pct}%;background:${isGold ? "var(--gold)" : color}"></div>
+      </div>
+      <div class="probe-val">${pct}%</div>
+    </div>`;
           })
           .join("");
+      }
+
+      function renderResponses(responses) {
+        const el = document.getElementById("response-grid");
+        const primary = responses.slice(0, 14);
+        el.innerHTML = primary
+          .map((r, i) => {
+            const label = r.question.split("?")[0].trim().substring(0, 22);
+            const hasAns = r.answer && r.answer.trim();
+            const isExtracted = r.auto_extracted;
+            const isVal = i >= 14;
+            let slotClass = "r-slot";
+            if (hasAns)
+              slotClass += isExtracted
+                ? " extracted"
+                : isVal
+                  ? " validation answered"
+                  : " answered";
+            else if (isVal) slotClass += " validation";
+            return `<div class="${slotClass}">
+      <div class="r-slot-label">
+        ${hasAns ? (isExtracted ? '<span class="check-teal">◈</span>' : isVal ? '<span class="check-purple">✓</span>' : '<span class="check">✓</span>') : "○"}
+        ${label}
+        ${isExtracted ? '<span class="extract-badge">AUTO</span>' : ""}
+      </div>
+      ${hasAns ? `<div class="r-slot-answer">${r.answer.substring(0, 60)}</div>` : ""}
+    </div>`;
+          })
+          .join("");
+      }
+
+      function renderTranscript(transcript) {
+        const el = document.getElementById("transcript");
+        const newItems = transcript.slice(lastTxLength);
+        if (!newItems.length) return;
+        newItems.forEach((t) => {
+          const div = document.createElement("div");
+          div.className = "t-row";
+          div.innerHTML = `<div class="t-role ${t.role}">${t.role.toUpperCase()}</div>
+                     <div class="t-msg">${t.message || ""}</div>`;
+          el.appendChild(div);
+        });
+        lastTxLength = transcript.length;
         el.scrollTop = el.scrollHeight;
       }
 
-      // ── AI STATE ──
       function renderAIState(mode) {
         const el = document.getElementById("ai-state");
+        const m = (mode || "").toUpperCase();
+        if (m.includes("HANDOFF")) {
+          el.className = "ai-state warning";
+        } else if (
+          m.includes("SAFETY") ||
+          m.includes("DISTRESS") ||
+          m.includes("DEEP")
+        ) {
+          el.className = "ai-state danger";
+        } else if (m.includes("COMPLETE")) {
+          el.className = "ai-state success";
+        } else {
+          el.className = "ai-state standard";
+        }
         el.textContent = mode || "STANDARD CLINICAL";
-        el.className = "ai-state";
-        const danger = [
-          "DE-ESCALATION",
-          "CLINICAL ADVISORY",
-          "DEEP PROBE ACTIVE",
-          "ACOUSTIC CLARIFICATION",
-          "EMPATHY CRITICAL",
-          "HESITATION DETECTED",
-        ];
-        const warning = [
-          "SOFT PROBE ACTIVE",
-          "CONTRADICTION AUDIT",
-          "EMPATHY PROTOCOL",
-          "HUMAN TRANSFER PENDING",
-        ];
-        const success = [
-          "SYNTHESIS COMPLETE",
-          "COVERAGE COMPLETE",
-          "AI DISCLOSURE HANDLED",
-        ];
-        if (danger.includes(mode)) el.classList.add("danger");
-        else if (warning.includes(mode)) el.classList.add("warning");
-        else if (success.includes(mode)) el.classList.add("success");
-        else el.classList.add("standard");
       }
 
-      // ── SIGNAL ──
       function renderSignal(score, depth) {
-        const el = document.getElementById("signal-score");
-        const bdg = document.getElementById("depth-badge");
-        el.textContent = score || 0;
-        el.style.color =
-          score >= 7
-            ? "var(--red)"
-            : score >= 3
-              ? "var(--orange)"
-              : "var(--blue)";
-        bdg.textContent = (depth || "standard").replace("_", " ").toUpperCase();
-        bdg.className = "depth-badge";
-        if (depth === "deep_probe") bdg.classList.add("depth-deep");
-        else if (depth === "soft_probe") bdg.classList.add("depth-soft");
-        else bdg.classList.add("depth-standard");
+        document.getElementById("signal-score").textContent = score || 0;
+        const badge = document.getElementById("depth-badge");
+        if (depth === "deep_probe") {
+          badge.textContent = "DEEP PROBE";
+          badge.className = "depth-badge depth-deep";
+        } else if (depth === "soft_probe") {
+          badge.textContent = "SOFT PROBE";
+          badge.className = "depth-badge depth-soft";
+        } else {
+          badge.textContent = "STANDARD";
+          badge.className = "depth-badge depth-standard";
+        }
       }
 
-      // ── CHURN ──
-      function renderChurn(score, risk) {
-        const fill = document.getElementById("churn-fill");
-        const label = document.getElementById("churn-risk-label");
-        const num = document.getElementById("churn-score");
-        const pct = Math.min(score || 0, 100);
-        fill.style.width = pct + "%";
-        fill.style.background =
-          pct > 60 ? "var(--red)" : pct > 30 ? "var(--orange)" : "var(--green)";
-        num.textContent = pct + "%";
-        label.textContent = risk || "—";
-        label.style.color =
-          risk === "HIGH"
-            ? "var(--red)"
-            : risk === "MEDIUM"
-              ? "var(--orange)"
-              : "var(--green)";
-      }
-
-      // ── CONTRADICTIONS ──
       function renderContradictions(contradictions) {
         const card = document.getElementById("contradiction-card");
         const list = document.getElementById("contradiction-list");
-        if (!contradictions || contradictions.length === 0) {
+        if (!contradictions || !contradictions.length) {
           card.classList.remove("visible");
           return;
         }
@@ -1784,62 +2241,62 @@
           .map(
             (c) => `
     <div class="c-item">
-      <div class="c-summary">${c.summary || ""}</div>
-      <div class="c-fields">${c.field_a} → "${c.answer_a}" vs ${c.field_b} → "${c.answer_b}"</div>
+      <div class="c-summary">${c.summary}</div>
+      <div class="c-fields">${c.field_a}: "${c.answer_a}" ↔ ${c.field_b}: "${c.answer_b}"</div>
     </div>`,
           )
           .join("");
       }
 
-      // ── MULTI-EXTRACT ──
       function renderExtracted(extracted) {
         const card = document.getElementById("extract-card");
-        const count = document.getElementById("extract-count");
-        const list = document.getElementById("extract-list");
-        if (!extracted || extracted.length === 0) {
+        if (!extracted || !extracted.length) {
           card.classList.remove("visible");
           return;
         }
         card.classList.add("visible");
-        count.textContent = extracted.length;
-        list.innerHTML = extracted
-          .map((e) => `<div class="ex-item">◈ ${e.topic}: "${e.snippet}"</div>`)
+        document.getElementById("extract-count").textContent = extracted.length;
+        document.getElementById("extract-list").innerHTML = extracted
+          .map(
+            (e) =>
+              `<div class="ex-item">◈ ${e.topic}: "${e.snippet.substring(0, 50)}"</div>`,
+          )
           .join("");
       }
 
-      // ── INNOVATION 1: GLP-1 RISK MATRIX ──
+      function renderChurn(score, level) {
+        if (score === undefined || score === null) return;
+        const pct = Math.min(score, 100);
+        const color =
+          pct > 60 ? "var(--red)" : pct > 30 ? "var(--orange)" : "var(--green)";
+        document.getElementById("churn-score").textContent = pct + "%";
+        document.getElementById("churn-fill").style.width = pct + "%";
+        document.getElementById("churn-fill").style.background = color;
+        document.getElementById("churn-risk-label").textContent = level || "—";
+        document.getElementById("churn-dot").className =
+          "card-title-dot " + (pct > 60 ? "" : pct > 30 ? "orange" : "green");
+      }
+
       function renderGLP1Matrix(factors) {
+        if (!factors || !factors.length) return;
         const card = document.getElementById("glp1-card");
-        if (!factors || factors.length === 0) {
-          card.classList.remove("visible");
-          return;
-        }
         card.classList.add("visible");
-
-        const activeCount = factors.filter((f) => f.active).length;
-        document.getElementById("glp1-active-count").textContent = activeCount;
-        document.getElementById("glp1-active-count").style.color =
-          activeCount >= 3
-            ? "var(--red)"
-            : activeCount >= 1
-              ? "var(--orange)"
-              : "var(--green)";
-
         document.getElementById("glp1-factors").innerHTML = factors
           .map(
             (f) => `
     <div class="glp1-factor">
       <div class="glp1-dot ${f.active ? "" : "inactive"}"></div>
       <div>
-        <div class="glp1-factor-label" style="color:${f.active ? "var(--text)" : "var(--text3)"}">${f.label || f.id}</div>
-        <div class="glp1-evidence">${f.evidence || ""}</div>
+        <div class="glp1-factor-label">${f.label}</div>
+        <div class="glp1-evidence">${f.evidence}</div>
       </div>
     </div>`,
           )
           .join("");
+        document.getElementById("glp1-active-count").textContent =
+          factors.filter((f) => f.active).length;
       }
 
-      // ── INNOVATION 2: LONGITUDINAL DELTA ──
       function renderLongitudinalDelta(delta) {
         const card = document.getElementById("delta-card");
         if (!delta) {
@@ -1847,13 +2304,11 @@
           return;
         }
         card.classList.add("visible");
-
         const body = document.getElementById("delta-body");
         if (!delta.available) {
-          body.innerHTML = `<div class="delta-no-data">No previous call data provided. Add previous call summary to the left panel to enable longitudinal trend tracking.</div>`;
+          body.innerHTML = `<div class="delta-no-data">No previous call data. History auto-loaded from patient DB on next call.</div>`;
           return;
         }
-
         const trend = (delta.trend || "STABLE").toLowerCase();
         const arrow =
           trend === "improving" ? "↑" : trend === "deteriorating" ? "↓" : "→";
@@ -1863,28 +2318,12 @@
             : trend === "deteriorating"
               ? "var(--red)"
               : "var(--blue)";
-
         const rows = [
           { key: "WEIGHT", val: delta.weight_trend || "N/A" },
           { key: "SIDE EFX", val: delta.side_effect_trend || "N/A" },
           { key: "ENGAGEMENT", val: delta.engagement_trend || "N/A" },
           { key: "SUPPLY", val: delta.supply_trend || "N/A" },
         ];
-
-        const rowsHtml = rows
-          .map(
-            (r) => `
-    <div class="delta-row">
-      <div class="delta-row-key">${r.key}</div>
-      <div class="delta-row-val">${r.val}</div>
-    </div>`,
-          )
-          .join("");
-
-        const escalationHtml = delta.escalation_recommended
-          ? `<div class="delta-escalation">⚠ Escalation recommended based on deteriorating longitudinal signals</div>`
-          : "";
-
         body.innerHTML = `
     <div class="delta-trend">
       <div class="delta-arrow ${trend}" style="color:${tColor}">${arrow}</div>
@@ -1893,11 +2332,12 @@
         <div style="font-size:10px;color:var(--text2);margin-top:2px">${delta.delta_summary || ""}</div>
       </div>
     </div>
-    <div class="delta-rows">${rowsHtml}</div>
-    ${escalationHtml}`;
+    <div class="delta-rows">
+      ${rows.map((r) => `<div class="delta-row"><div class="delta-row-key">${r.key}</div><div class="delta-row-val">${r.val}</div></div>`).join("")}
+    </div>
+    ${delta.escalation_recommended ? `<div class="delta-escalation">⚠ Escalation recommended based on deteriorating longitudinal signals</div>` : ""}`;
       }
 
-      // ── FORECAST ──
       function renderForecast(forecast) {
         const card = document.getElementById("forecast-card");
         if (!forecast) {
@@ -1916,8 +2356,9 @@
           forecast.next_contact_window || "—";
         document.getElementById("contact-reason").textContent =
           forecast.contact_reason || "";
-        const factorsEl = document.getElementById("forecast-factors");
-        factorsEl.innerHTML = (forecast.top_risk_factors || [])
+        document.getElementById("forecast-factors").innerHTML = (
+          forecast.top_risk_factors || []
+        )
           .map(
             (f) =>
               `<div class="forecast-factor"><div class="factor-dot"></div>${f}</div>`,
@@ -1925,16 +2366,14 @@
           .join("");
       }
 
-      // ── PRIORITY ACTIONS ──
       function renderPriorityActions(actions) {
         const card = document.getElementById("priority-card");
-        const el = document.getElementById("priority-actions");
-        if (!actions || actions.length === 0) {
+        if (!actions || !actions.length) {
           card.classList.remove("visible");
           return;
         }
         card.classList.add("visible");
-        el.innerHTML = actions
+        document.getElementById("priority-actions").innerHTML = actions
           .map(
             (a) => `
     <div class="p-action">
@@ -1948,10 +2387,8 @@
           .join("");
       }
 
-      // ── VALIDATOR BADGE ──
       function renderValidator(validator) {
         if (!validator) return;
-        const row = document.getElementById("validator-row");
         const text = document.getElementById("validator-text");
         const badge = document.getElementById("validator-badge");
         text.textContent = validator.validator_note || "Validation complete.";
@@ -1961,21 +2398,16 @@
         } else {
           badge.textContent = "DISCREPANCIES";
           badge.className = "validator-badge validator-fail";
-          if (validator.discrepancies && validator.discrepancies.length > 0) {
+          if (validator.discrepancies && validator.discrepancies.length > 0)
             text.textContent += " · " + validator.discrepancies.join("; ");
-          }
         }
       }
 
-      // ── INNOVATION 3: MI FIDELITY SCORE ──
       function renderMIFidelity(miScore, miAssessment) {
-        const row = document.getElementById("mi-row");
-        const scoreEl = document.getElementById("mi-score-num");
-        const badgeEl = document.getElementById("mi-badge");
-        const assessEl = document.getElementById("mi-assessment-text");
         if (miScore === null || miScore === undefined) return;
+        const row = document.getElementById("mi-row");
         row.style.display = "flex";
-        assessEl.style.display = "block";
+        document.getElementById("mi-assessment-text").style.display = "block";
         const pct = parseInt(miScore) || 0;
         const cls = pct >= 75 ? "strong" : pct >= 50 ? "adequate" : "weak";
         const label =
@@ -1984,14 +2416,15 @@
             : pct >= 50
               ? "ADEQUATE"
               : "NEEDS IMPROVEMENT";
-        scoreEl.textContent = pct;
-        scoreEl.className = `mi-score-num ${cls}`;
-        badgeEl.textContent = label;
-        badgeEl.className = `mi-badge ${cls}`;
-        assessEl.textContent = miAssessment || "";
+        document.getElementById("mi-score-num").textContent = pct;
+        document.getElementById("mi-score-num").className =
+          `mi-score-num ${cls}`;
+        document.getElementById("mi-badge").textContent = label;
+        document.getElementById("mi-badge").className = `mi-badge ${cls}`;
+        document.getElementById("mi-assessment-text").textContent =
+          miAssessment || "";
       }
 
-      // ── INNOVATION 4: HESITATION FINGERPRINT ──
       function renderHesitationFingerprint(hesitation) {
         const card = document.getElementById("hesitation-card");
         if (!hesitation) {
@@ -1999,48 +2432,33 @@
           return;
         }
         card.classList.add("visible");
-
         const level = (hesitation.level || "LOW").toLowerCase();
         const idx = hesitation.hesitation_index || 0;
-
-        const indexEl = document.getElementById("hesitation-index");
-        const badgeEl = document.getElementById("hesitation-level-badge");
-        indexEl.textContent = idx.toFixed(2);
-        indexEl.className = `hesitation-index ${level}`;
-        badgeEl.textContent = hesitation.level || "LOW";
-        badgeEl.className = `hesitation-level-badge ${level}`;
-
+        document.getElementById("hesitation-index").textContent =
+          idx.toFixed(2);
+        document.getElementById("hesitation-index").className =
+          `hesitation-index ${level}`;
+        document.getElementById("hesitation-level-badge").textContent =
+          hesitation.level || "LOW";
+        document.getElementById("hesitation-level-badge").className =
+          `hesitation-level-badge ${level}`;
         document.getElementById("hesitation-metrics").innerHTML = `
-    <div class="h-metric">
-      <div class="h-metric-val">${hesitation.hedge_count || 0}</div>
-      <div class="h-metric-label">Hedge words</div>
-    </div>
-    <div class="h-metric">
-      <div class="h-metric-val">${hesitation.very_short_answers || 0}</div>
-      <div class="h-metric-label">Short answers</div>
-    </div>
-    <div class="h-metric">
-      <div class="h-metric-val">${hesitation.average_response_length || "—"}</div>
-      <div class="h-metric-label">Avg words/turn</div>
-    </div>
-    <div class="h-metric">
-      <div class="h-metric-val">${hesitation.topic_deflections || 0}</div>
-      <div class="h-metric-label">Deflections</div>
-    </div>`;
-
-        const patterns = hesitation.notable_patterns || [];
-        document.getElementById("hesitation-patterns").innerHTML = patterns
+    <div class="h-metric"><div class="h-metric-val">${hesitation.hedge_count || 0}</div><div class="h-metric-label">Hedge words</div></div>
+    <div class="h-metric"><div class="h-metric-val">${hesitation.short_responses || 0}</div><div class="h-metric-label">Short answers</div></div>
+    <div class="h-metric"><div class="h-metric-val">${hesitation.avg_response_len || "—"}</div><div class="h-metric-label">Avg words/turn</div></div>
+    <div class="h-metric"><div class="h-metric-val">${Math.round((hesitation.hesitation_index || 0) * 100)}%</div><div class="h-metric-label">Hesitation index</div></div>`;
+        document.getElementById("hesitation-patterns").innerHTML = (
+          hesitation.notable_patterns || []
+        )
           .map((p) => `<div class="h-pattern">${p}</div>`)
           .join("");
       }
 
-      // ── BEHAVIORAL PROFILE ──
       function renderProfile(insights) {
         if (!insights) return;
         document.getElementById("profile-card").classList.remove("hidden");
         document.getElementById("edge-card").classList.remove("hidden");
         document.getElementById("soap-card").classList.remove("hidden");
-
         document.getElementById("profile-text").textContent =
           insights.behavioral_profile || "";
         document.getElementById("advocate-text").textContent =
@@ -2053,16 +2471,168 @@
           insights.edge_case_report || "";
         document.getElementById("soap-text").textContent =
           insights.soap_note || "";
-
         renderValidator(insights.validator_result);
         renderForecast(insights.adherence_forecast);
         renderPriorityActions(insights.priority_actions);
         renderMIFidelity(insights.mi_score, insights.mi_assessment);
         renderLongitudinalDelta(insights.longitudinal_delta);
         renderGLP1Matrix(insights.glp1_risk_factors);
+        // v5: render Next-Call Strategy
+        if (insights.next_call_strategy) {
+          renderNextCallStrategy(
+            insights.next_call_strategy_structured || {
+              next_call_strategy: insights.next_call_strategy,
+            },
+          );
+        }
       }
 
-      // ── RADAR CHART (D3.js) — now 8 spokes ──
+      // ── NEW v5 RENDER FUNCTIONS ──
+
+      function renderPreCallBrief(brief) {
+        if (!brief) return;
+        const card = document.getElementById("precall-card");
+        card.classList.add("visible");
+        document.getElementById("precall-brief-text").textContent =
+          brief.strategy_summary || "";
+        const meta = document.getElementById("precall-meta");
+        const riskClass =
+          brief.risk_prediction === "HIGH"
+            ? "risk-high"
+            : brief.risk_prediction === "LOW"
+              ? "risk-low"
+              : "risk-medium";
+        let html = `<span class="precall-tag ${riskClass}">PREDICTED: ${brief.risk_prediction || "—"}</span>`;
+        html += `<span class="precall-tag sensitivity">FOCUS: ${brief.priority_focus || "—"}</span>`;
+        if (brief.sensitivities_reminder) {
+          brief.sensitivities_reminder.split(",").forEach((s) => {
+            const t = s.trim();
+            if (t)
+              html += `<span class="precall-tag sensitivity">⚠ ${t}</span>`;
+          });
+        }
+        meta.innerHTML = html;
+      }
+
+      function renderLivingMemory(memState) {
+        if (!memState) return;
+        const card = document.getElementById("memory-card");
+        card.classList.add("visible");
+
+        // Coverage
+        const pct = Math.round((memState.coverage_pct || 0) * 100);
+        document.getElementById("memory-coverage-pct").textContent = pct + "%";
+        document.getElementById("memory-coverage-fill").style.width = pct + "%";
+
+        // Emotional state
+        const es = (memState.emotional_state || "neutral").toLowerCase();
+        const badge = document.getElementById("memory-emotional-badge");
+        badge.textContent = (
+          memState.emotional_state || "neutral"
+        ).toUpperCase();
+        badge.className = `memory-emotional-badge ${es}`;
+
+        // Question pills
+        const allKeys = [
+          "overall_feeling",
+          "current_weight",
+          "weight_lost",
+          "missed_doses",
+          "side_effects",
+          "satisfaction",
+          "new_medications",
+          "new_allergies",
+          "surgeries",
+          "energy_levels",
+          "diet_adherence",
+          "treatment_concerns",
+          "doctor_questions",
+          "address_change",
+        ];
+        const answered = memState.questions_answered || [];
+        document.getElementById("memory-q-grid").innerHTML = allKeys
+          .map((k) => {
+            const done = answered.includes(k);
+            const label = k.replace(/_/g, " ").substring(0, 12);
+            return `<span class="memory-q-pill ${done ? "answered" : "pending"}">${label}</span>`;
+          })
+          .join("");
+
+        // Detected flags
+        const flags = memState.detected_flags || [];
+        const flagsEl = document.getElementById("memory-flags-row");
+        if (flags.length > 0) {
+          flagsEl.innerHTML = flags
+            .map(
+              (f) => `<span class="memory-flag ${f}">${f.toUpperCase()}</span>`,
+            )
+            .join("");
+        } else {
+          flagsEl.innerHTML =
+            '<span style="font-size:10px;color:var(--text3);font-style:italic">None detected</span>';
+        }
+
+        // Recommended next action
+        const nextEl = document.getElementById("memory-next-action");
+        const next = (memState.recommended_next_action || "continue_interview")
+          .replace(/_/g, " ")
+          .toUpperCase();
+        const isHandoff = (memState.recommended_next_action || "").startsWith(
+          "handoff",
+        );
+        const isClose = memState.recommended_next_action === "close_call";
+        nextEl.textContent = "→ " + next;
+        nextEl.className =
+          "memory-next-action" +
+          (isHandoff ? " handoff" : isClose ? " close" : "");
+      }
+
+      function renderGhostAlerts(alerts) {
+        if (!alerts || !alerts.length) return;
+        const card = document.getElementById("ghost-card");
+        card.classList.add("visible");
+
+        // Only render new alerts since last render
+        if (alerts.length <= lastGhostCount) return;
+        const newAlerts = alerts.slice(lastGhostCount);
+        lastGhostCount = alerts.length;
+
+        const feed = document.getElementById("ghost-feed");
+        newAlerts.forEach((a) => {
+          const div = document.createElement("div");
+          div.className = "ghost-alert";
+          const elapsed = a.timestamp
+            ? Math.round(a.timestamp - (window._callStartTime || a.timestamp))
+            : 0;
+          const timeStr = elapsed > 0 ? `+${elapsed}s` : "—";
+          const riskCls = (a.risk || "").toUpperCase();
+          div.innerHTML = `
+      <div class="ghost-time">${timeStr}</div>
+      <div class="ghost-dot ${riskCls}"></div>
+      <div class="ghost-text ${riskCls}">${a.observation}</div>`;
+          feed.appendChild(div);
+        });
+        feed.scrollTop = feed.scrollHeight;
+      }
+
+      function renderNextCallStrategy(structured) {
+        if (!structured) return;
+        const card = document.getElementById("next-call-card");
+        card.classList.add("visible");
+        document.getElementById("next-call-strategy-text").textContent =
+          structured.next_call_strategy || "";
+        const openingText = structured.recommended_opening;
+        const openingSection = document.getElementById(
+          "next-call-opening-section",
+        );
+        if (openingText) {
+          openingSection.style.display = "block";
+          document.getElementById("next-call-opening-text").textContent =
+            openingText;
+        }
+      }
+
+      // ── RADAR CHART ──
       function drawRadar(probes) {
         const keys = Object.keys(probes);
         const vals = Object.values(probes);
@@ -2108,8 +2678,7 @@
 
         const dataPoints = vals.map((v, i) => {
           const a = angleSlice * i - Math.PI / 2;
-          const r = R * v;
-          return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+          return [cx + R * v * Math.cos(a), cy + R * v * Math.sin(a)];
         });
         svg
           .append("polygon")
@@ -2120,8 +2689,6 @@
 
         vals.forEach((v, i) => {
           const a = angleSlice * i - Math.PI / 2;
-          const r = R * v;
-          // MI Fidelity probe (H) gets gold color
           const col =
             keys[i] === "H_mi_fidelity"
               ? "#ffd60a"
@@ -2132,11 +2699,10 @@
                   : "#ff453a";
           svg
             .append("circle")
-            .attr("cx", cx + r * Math.cos(a))
-            .attr("cy", cy + r * Math.sin(a))
+            .attr("cx", cx + R * v * Math.cos(a))
+            .attr("cy", cy + R * v * Math.sin(a))
             .attr("r", 4)
-            .attr("fill", col)
-            .attr("filter", `drop-shadow(0 0 4px ${col})`);
+            .attr("fill", col);
         });
 
         keys.forEach((k, i) => {
@@ -2156,7 +2722,6 @@
         });
       }
 
-      // ── STATUS BADGE ──
       function setStatusBadge(state) {
         const el = document.getElementById("status-badge");
         if (state === "live") {
@@ -2171,7 +2736,7 @@
         }
       }
 
-      // ── MAIN POLL ──
+      // ── MAIN POLL (/call-state at 800ms) ──
       async function poll() {
         try {
           const res = await fetch("/call-state");
@@ -2187,7 +2752,6 @@
           renderExtracted(state.extracted_answers || []);
           drawRadar(state.probes || {});
 
-          // Live GLP-1 risk matrix (updates during call via run_deliberation)
           if (state.insights && state.insights.glp1_risk_factors) {
             renderGLP1Matrix(state.insights.glp1_risk_factors);
           } else if (state.glp1_risk_factors) {
@@ -2199,7 +2763,6 @@
             renderProfile(state.insights);
           }
 
-          // Post-call renders
           if (state.hesitation_fingerprint) {
             renderHesitationFingerprint(state.hesitation_fingerprint);
           }
@@ -2219,8 +2782,48 @@
         }
       }
 
+      // ── MEMORY POLL (/api/memory-state at 400ms) ──
+      async function pollMemory() {
+        try {
+          const res = await fetch("/api/memory-state");
+          const memState = await res.json();
+          renderLivingMemory(memState);
+          renderGhostAlerts(memState.ghost_alerts || []);
+        } catch (e) {
+          /* silent */
+        }
+      }
+
+      // ── GENERATE PRE-CALL BRIEF (button) ──
+      async function generateBrief() {
+        const patientId = document.getElementById("patient-id").value.trim();
+        if (!patientId) {
+          alert("Enter a patient ID first.");
+          return;
+        }
+        const card = document.getElementById("precall-card");
+        card.classList.add("visible");
+        document.getElementById("precall-brief-text").textContent =
+          "Generating strategy...";
+        document.getElementById("precall-meta").innerHTML = "";
+
+        try {
+          const res = await fetch("/api/pre-call-brief", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ patient_id: patientId }),
+          });
+          const data = await res.json();
+          if (data.brief) renderPreCallBrief(data.brief);
+        } catch (e) {
+          document.getElementById("precall-brief-text").textContent =
+            "Brief generation failed.";
+        }
+      }
+
       // ── START CALL ──
       async function startCall() {
+        const patientId = document.getElementById("patient-id").value.trim();
         const name = document.getElementById("patient-name").value.trim();
         const med = document.getElementById("medication").value.trim();
         const ctx = document.getElementById("patient-context").value.trim();
@@ -2245,6 +2848,9 @@
         document.getElementById("glp1-card").classList.remove("visible");
         document.getElementById("delta-card").classList.remove("visible");
         document.getElementById("hesitation-card").classList.remove("visible");
+        document.getElementById("ghost-card").classList.remove("visible");
+        document.getElementById("memory-card").classList.remove("visible");
+        document.getElementById("next-call-card").classList.remove("visible");
         document.getElementById("profile-card").classList.add("hidden");
         document.getElementById("edge-card").classList.add("hidden");
         document.getElementById("soap-card").classList.add("hidden");
@@ -2254,7 +2860,12 @@
         document.getElementById("churn-score").textContent = "0%";
         document.getElementById("churn-fill").style.width = "0%";
         document.getElementById("churn-risk-label").textContent = "—";
+        document.getElementById("ghost-feed").innerHTML = "";
+        document.getElementById("memory-flags-row").innerHTML = "";
+        document.getElementById("memory-q-grid").innerHTML = "";
         lastTxLength = 0;
+        lastGhostCount = 0;
+        window._callStartTime = Date.now() / 1000;
 
         await fetch("/api/start-call", {
           method: "POST",
@@ -2264,6 +2875,7 @@
             medication: med,
             patient_context: ctx,
             previous_call_context: prevCtx,
+            patient_id: patientId,
           }),
         });
 
@@ -2276,7 +2888,9 @@
         document.getElementById("btn-export").classList.add("hidden");
 
         if (pollInterval) clearInterval(pollInterval);
+        if (memoryPollInterval) clearInterval(memoryPollInterval);
         pollInterval = setInterval(poll, 800);
+        memoryPollInterval = setInterval(pollMemory, 400);
       }
 
       // ── END CALL ──
@@ -2300,7 +2914,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `specter-dossier-${Date.now()}.json`;
+        a.download = `specter-v5-dossier-${Date.now()}.json`;
         a.click();
         URL.revokeObjectURL(url);
       }
