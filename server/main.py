@@ -1,20 +1,15 @@
 # server/main.py
-# SPECTER v5 — Clinical Intelligence Voice Agent Backend
+# SPECTER v6 — Clinical Intelligence Voice Agent Backend
 #
-# v4 innovations (kept):
-#   1. GLP-1 Churn Risk Matrix
-#   2. Longitudinal Risk Delta
-#   3. MI Fidelity Score — Probe H
-#   4. Hesitation Fingerprint
-#
-# v5 NEW innovations:
-#   5. Living Memory — shared structured brain across all Workflow agents
-#   6. Pre-Call AI Briefing — Groq reads patient history, generates today's strategy
-#   7. Ghost Analyst — async parallel Groq commentary on every tool call
-#   8. Closed Loop — Round 5 deliberation writes next-call strategy to patient DB
-#   9. Patient SQLite DB — longitudinal patient tracking across calls
-#  10. Dynamic Prompt Injection — Jessica's ElevenLabs prompt overridden per-call
-#      with patient-specific strategy. Permanent agent config never touched.
+# v4 (kept): GLP-1 Churn Risk Matrix · Longitudinal Delta · MI Fidelity · Hesitation Fingerprint
+# v5 (kept): Living Memory · Pre-Call Brief · Ghost Analyst · Closed Loop · Patient DB · Prompt Injection
+# v6 NEW:
+#   11. Structured JSON Output  — /api/structured-output matches transcript_samples.json schema exactly
+#   12. correct_answer tool     — patient self-corrections update grid live with CORRECTED badge
+#   13. Live Outcome Prediction — compute_outcome_probabilities() after every log_answer
+#   14. Pricing Severity Gate   — 2-strike threshold before escalation fires
+
+
 
 
 import os
@@ -24,12 +19,14 @@ import threading
 import asyncio
 from datetime import date
 
+
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from groq import Groq
+
 
 from elevenlabs.client import ElevenLabs
 from elevenlabs.conversational_ai.conversation import (
@@ -39,11 +36,14 @@ from elevenlabs.conversational_ai.default_audio_interface import DefaultAudioInt
 from deliberation.judge import run_deliberation, run_final_llm_deliberation
 from db.patient_store import init_db, get_patient, save_call_summary, update_next_strategy, upsert_patient
 
+
 load_dotenv()
 
-app      = FastAPI(title="TrimRX SPECTER Backend v5")
+
+app      = FastAPI(title="TrimRX SPECTER Backend v6")
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEMO_DIR = os.path.join(BASE_DIR, "demo")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,8 +52,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Init patient DB on startup
 init_db()
+
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -83,27 +86,29 @@ QUESTIONS = [
     "Has your pharmacy filled anything new for you recently?",
 ]
 
+
 QUESTION_LABELS = {
-    "How have you been feeling overall?":                                     "Overall",
-    "What's your current weight in pounds?":                                  "Weight",
-    "How much weight have you lost this past month in pounds?":               "Weight Loss",
+    "How have you been feeling overall?":                                     "Overall Feeling",
+    "What's your current weight in pounds?":                                  "Current Weight",
+    "How much weight have you lost this past month in pounds?":               "Weight Lost",
     "Have you missed any doses this past month?":                             "Missed Doses",
     "Any side effects from your medication this month?":                      "Side Effects",
     "Satisfied with your rate of weight loss?":                               "Satisfaction",
-    "Have you started any new medications or supplements since last month?":   "New Meds",
-    "Any new allergies?":                                                     "Allergies",
+    "Have you started any new medications or supplements since last month?":  "New Medications",
+    "Any new allergies?":                                                     "New Allergies",
     "Any surgeries since your last check-in?":                                "Surgeries",
     "How would you rate your energy levels compared to when you started?":    "Energy Levels",
     "Have you been following your recommended diet while on this medication?": "Diet Adherence",
     "Do you have any concerns about continuing your treatment plan?":         "Treatment Concerns",
-    "Any questions for your doctor?":                                         "Dr. Questions",
-    "Has your shipping address changed?":                                     "Address",
+    "Any questions for your doctor?":                                         "Doctor Questions",
+    "Has your shipping address changed?":                                     "Address Change",
     "How far do you feel you are from your target weight?":                   "[V] Target Gap",
     "How many days of medication supply do you have left?":                   "[V] Supply Days",
-    "Has anything made it harder to take your medication consistently?":      "[V] Adherence",
-    "If you could change one thing about your treatment, what would it be?":  "[V] Change Ask",
-    "Has your pharmacy filled anything new for you recently?":                "[V] Pharmacy",
+    "Has anything made it harder to take your medication consistently?":      "[V] Adherence Difficulty",
+    "If you could change one thing about your treatment, what would it be?":  "[V] Change Request",
+    "Has your pharmacy filled anything new for you recently?":                "[V] Pharmacy Recent",
 }
+
 
 TOPIC_TO_INDEX = {
     "overall_feeling":      0,
@@ -127,12 +132,14 @@ TOPIC_TO_INDEX = {
     "pharmacy_recent":      18,
 }
 
+
 PRIMARY_TOPIC_KEYS = [
     "overall_feeling", "current_weight", "weight_lost", "missed_doses",
     "side_effects", "satisfaction", "new_medications", "new_allergies",
     "surgeries", "energy_levels", "diet_adherence", "treatment_concerns",
     "doctor_questions", "address_change",
 ]
+
 
 PROBE_LABELS = {
     "A_acoustic_fidelity":  "Acoustic",
@@ -144,6 +151,7 @@ PROBE_LABELS = {
     "G_behavioral_signal":  "Behavioral",
     "H_mi_fidelity":        "MI Fidelity",
 }
+
 
 SIGNAL_WEIGHTS = {
     "none":                   0,
@@ -157,6 +165,7 @@ SIGNAL_WEIGHTS = {
     "pricing_question":       1,
     "refused":                2,
 }
+
 
 EXTRACTION_HINTS = {
     "overall_feeling":    ["feeling", "doing well", "doing good", "been okay", "been great", "been rough", "been bad"],
@@ -172,6 +181,7 @@ EXTRACTION_HINTS = {
     "doctor_questions":   ["ask the doctor", "question for", "wondering about dosage", "want to know"],
 }
 
+
 FLAG_KEYWORD_MAP = {
     "pricing":      ["expensive", "afford", "cost", "price", "insurance", "billing", "money", "can't keep"],
     "nausea":       ["nausea", "nauseous", "vomiting", "sick", "queasy"],
@@ -180,6 +190,7 @@ FLAG_KEYWORD_MAP = {
     "missed_doses": ["missed", "forgot", "skipped", "didn't take"],
     "distress":     ["depressed", "anxious", "suicidal", "hopeless", "crying", "can't cope"],
 }
+
 
 EMOTIONAL_KEYWORDS = {
     "distressed": ["depressed", "anxious", "suicidal", "hopeless", "crying", "can't cope",
@@ -191,17 +202,18 @@ EMOTIONAL_KEYWORDS = {
 }
 
 
+
+
 # ─────────────────────────────────────────────────────────────
-# JESSICA BASE PROMPT  (v5 — NEW)
-# Stored in Python so we can prepend patient-specific context
-# and inject it into ElevenLabs per-call via conversation_config_override.
-# The permanent ElevenLabs agent config is never modified.
+# JESSICA BASE PROMPT  (v5)
 # ─────────────────────────────────────────────────────────────
 JESSICA_BASE_PROMPT = """You are Jessica, a compassionate and professional clinical care coordinator
 for TrimRX, a GLP-1 weight-loss medication company. You are conducting a
 routine medication check-in call with a patient on Semaglutide.
 
+
 === LIVING MEMORY PROTOCOL ===
+
 
 RULE 0 — MEMORY CHECK: Before formulating ANY question, call get_memory_state().
 Read questions_remaining to know exactly what hasn't been asked.
@@ -209,6 +221,7 @@ Read questions_answered — NEVER re-ask these.
 Read emotional_state — calibrate your tone to match.
 Read handoff_required — if true, do NOT ask another question.
 Read recommended_next_action and follow it exactly.
+
 
 RULE 0b — HANDOFF PROTOCOL:
   If handoff_required is true:
@@ -221,70 +234,101 @@ RULE 0b — HANDOFF PROTOCOL:
   - handoff_target "scheduling": say "Absolutely, no problem at all."
     Call schedule_callback(), then stop speaking.
 
+
 RULE 0c — QUESTION ORDER: Work through questions_remaining in the order
 the memory returns them. If a key is in questions_answered, skip it entirely.
+
 
 RULE 0d — COVERAGE LOCK: Do NOT call end_call(completed) if
 questions_remaining has more than 0 items, unless the patient has
 explicitly refused further questions or opted out.
 
+
 === CLINICAL RULES ===
+
 
 RULE 1 — IDENTITY: The patient's identity has already been verified.
 Do not re-verify. Greet them by name warmly and proceed directly.
 
+
 RULE 2 — 14 QUESTIONS: You must ask all 14 primary clinical questions.
 Call log_answer() after EVERY confirmed patient response. No exceptions.
 
+
 RULE 3 — NATURAL FLOW: Ask one question at a time. Acknowledge what the
 patient said before moving to the next question. Never sound like a checklist.
+
 
 RULE 4 — EMPATHY: When a patient shares something difficult (pain, side
 effects, financial stress, emotional distress), acknowledge it genuinely
 before continuing. Example: "I'm really sorry to hear that — thank you
 for letting me know."
 
+
 RULE 5 — NO MEDICAL ADVICE: If asked about dosage changes, stopping
 medication, or drug interactions, say: "That's a great question for
 Dr. Patel on our clinical team — I'll make sure it gets flagged for them."
+
 
 RULE 6 — CONTRADICTION HANDLING: If two answers seem inconsistent, call
 flag_contradiction() and probe gently: "Just to make sure I have this
 right..."
 
+
 RULE 7 — MULTI-EXTRACTION: When a patient volunteers information that
 answers an unasked question, call log_answer() for that topic immediately.
+
 
 RULE 8 — AI DISCLOSURE: If asked if you are an AI or a robot, call
 detect_ai_inquiry(). Say: "I'm a care coordinator assistant — would you
 like to continue your check-in?" Do not deny being AI.
 
+
 RULE 9 — EMOTIONAL DISTRESS: If the patient shows signs of distress,
 call log_emotional_distress() with appropriate urgency level.
+
 
 RULE 10 — CLOSING: Once questions_remaining is empty, say:
 "That covers everything I needed today. Your care team will review this
 and be in touch if anything needs follow-up. Take care, {{patient_name}}."
 Then call end_call(outcome: completed).
 
+
+RULE 11 — ANSWER CORRECTION:
+If the patient corrects a previous answer (using phrases like "wait",
+"actually", "I meant", "let me take that back", "I forgot to mention",
+"scratch that"):
+  — Acknowledge warmly: "Got it, I'll update that."
+  — Call correct_answer() immediately with the corrected information.
+  — Do NOT re-ask the question. Confirm and continue.
+
+
 === CALL FLOW ===
+
 
 STEP 1 — WARM OPENING: "Hi {{patient_name}}, this is Jessica from TrimRX.
 I'm calling for your monthly medication check-in — is now a good time?"
 
+
 STEP 2 — MEMORY CHECK: Call get_memory_state() to load clinical context
 before asking anything.
+
 
 STEP 3 — 14 QUESTIONS: Work through questions_remaining. After each
 answer, call log_answer() before moving on.
 
+
 STEP 4 — EDGE CASES: Trust the routing. When handoff_required fires,
 transfer immediately. Do not attempt to handle pricing or safety yourself.
 
+
 STEP 5 — CLOSE: Confirm refill, thank patient, call end_call(completed).
+
 
 You are warm, professional, clinically competent, and genuinely care
 about each patient. You never rush. You never skip questions."""
+
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -293,7 +337,14 @@ about each patient. You never rush. You never skip questions."""
 class CallState:
     def __init__(self):
         self.responses = [
-            {"question": q, "answer": "", "flag": "none", "auto_extracted": False}
+            {
+                "question":          q,
+                "answer":            "",
+                "flag":              "none",
+                "auto_extracted":    False,
+                "corrected":         False,
+                "correction_reason": None,
+            }
             for q in QUESTIONS
         ]
         self.outcome               = None
@@ -317,6 +368,9 @@ class CallState:
         self.hesitation_fingerprint = None
         self.patient_id            = ""
         self.patient_name          = ""
+        # v6 NEW
+        self.pricing_concern_level = 0          # 0=none, 1=noted, 2+=escalate
+        self.corrections           = []          # [{topic, original, corrected, reason, ts}]
 
         # ── PROBE SCORES ──
         self.probes = {
@@ -344,10 +398,22 @@ class CallState:
             "pre_call_brief":          "",
             "coverage_pct":            0.0,
             "call_number":             1,
+            # v6 NEW
+            "outcome_probabilities": {
+                "completed":       70,
+                "escalated":        5,
+                "billing_concern":  5,
+                "rescheduled":     10,
+                "opted_out":       10,
+            },
         }
 
 
+
+
 global_state = CallState()
+
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -399,10 +465,27 @@ def update_living_memory(topic_key: str, patient_answer: str, clinical_flag: str
         lm["recommended_next_action"] = "handoff_pharmacist"
         lm["handoff_required"]        = True
         lm["handoff_target"]          = "pharmacist"
+
     elif "pricing" in flags:
-        lm["recommended_next_action"] = "handoff_billing"
-        lm["handoff_required"]        = True
-        lm["handoff_target"]          = "billing"
+        # ── v6: SEVERITY GATE — note level-1, only escalate at level-2+ ──
+        pricing_detected_this_turn = any(
+            kw in ans_lower for kw in FLAG_KEYWORD_MAP.get("pricing", [])
+        ) or (clinical_flag == "pricing_question")
+
+        if pricing_detected_this_turn:
+            global_state.pricing_concern_level += 1
+
+        if global_state.pricing_concern_level >= 2:
+            # Confirmed barrier — route to billing
+            lm["recommended_next_action"] = "handoff_billing"
+            lm["handoff_required"]        = True
+            lm["handoff_target"]          = "billing"
+        else:
+            # First mention — acknowledge, note, continue interview
+            lm["recommended_next_action"] = "continue_interview"
+            lm["handoff_required"]        = False
+            lm["handoff_target"]          = None
+
     elif "reschedule" in flags:
         lm["recommended_next_action"] = "handoff_scheduling"
         lm["handoff_required"]        = True
@@ -419,6 +502,82 @@ def update_living_memory(topic_key: str, patient_answer: str, clinical_flag: str
         lm["recommended_next_action"] = "continue_interview"
         lm["handoff_required"]        = False
         lm["handoff_target"]          = None
+
+    # v6: update live outcome probabilities after every memory update
+    lm["outcome_probabilities"] = compute_outcome_probabilities()
+
+
+
+
+# ─────────────────────────────────────────────────────────────
+# v6 NEW — OUTCOME PROBABILITIES
+# Rules-based, zero LLM, zero latency.
+# Updates after every log_answer via update_living_memory().
+# ─────────────────────────────────────────────────────────────
+def compute_outcome_probabilities() -> dict:
+    lm    = global_state.living_memory
+    flags = lm["detected_flags"]
+    es    = lm["emotional_state"]
+    pcl   = global_state.pricing_concern_level
+
+    completed        = 60
+    escalated        =  5
+    billing_concern  =  5
+    rescheduled      = 10
+    opted_out        = 10
+
+    # Coverage progress boosts completion
+    cov_boost  = int(lm["coverage_pct"] * 25)
+    completed += cov_boost
+
+    # Safety flag
+    if "safety" in flags:
+        escalated += 35
+        completed -= 25
+
+    # Pricing concern — severity aware
+    if "pricing" in flags:
+        if pcl >= 2:
+            billing_concern += 35
+            completed       -= 20
+        else:
+            billing_concern += 12
+            completed       -=  5
+
+    # Reschedule flag
+    if "reschedule" in flags:
+        rescheduled += 35
+        completed   -= 20
+
+    # Emotional state
+    if es == "distressed":
+        opted_out  += 15
+        completed  -= 10
+    elif es == "concerned":
+        completed  -=  5
+
+    # Intent probe
+    b_score = global_state.probes.get("B_intent_alignment", 1.0)
+    if b_score < 0.5:
+        opted_out += 20
+        completed -= 15
+
+    probs = {
+        "completed":       max(0, completed),
+        "escalated":       max(0, escalated),
+        "billing_concern": max(0, billing_concern),
+        "rescheduled":     max(0, rescheduled),
+        "opted_out":       max(0, opted_out),
+    }
+
+    # Normalise to 100
+    total = sum(probs.values())
+    if total > 0:
+        probs = {k: round(v / total * 100) for k, v in probs.items()}
+
+    return probs
+
+
 
 
 def run_ghost_analyst(topic_key: str, patient_answer: str):
@@ -475,6 +634,8 @@ Do not start with "I". Do not include any preamble."""
         print(f"[GHOST ERROR] {e}")
 
 
+
+
 # ─────────────────────────────────────────────────────────────
 # PROBE SCORING
 # ─────────────────────────────────────────────────────────────
@@ -524,6 +685,8 @@ def score_probes_on_answer(patient_answer: str, clinical_flag: str,
     return acoustic_issue
 
 
+
+
 def accumulate_signal(clinical_flag: str):
     weight = SIGNAL_WEIGHTS.get(clinical_flag, 0)
     global_state.signal_score += weight
@@ -533,6 +696,8 @@ def accumulate_signal(clinical_flag: str):
         global_state.interview_depth = "soft_probe"
     else:
         global_state.interview_depth = "standard"
+
+
 
 
 def extract_multi_answers(patient_answer: str, current_topic: str):
@@ -558,6 +723,8 @@ def extract_multi_answers(patient_answer: str, current_topic: str):
                     "source":  current_topic,
                 })
                 break
+
+
 
 
 def check_cross_validation():
@@ -592,6 +759,8 @@ def check_cross_validation():
             )
 
 
+
+
 def compute_behavior_mode() -> str:
     lm = global_state.living_memory
     if global_state.outcome:
@@ -610,6 +779,8 @@ def compute_behavior_mode() -> str:
     if lm["coverage_pct"] > 0:
         return f"INTERVIEW IN PROGRESS — {int(lm['coverage_pct']*100)}% COVERED"
     return "AWAITING RESPONSE"
+
+
 
 
 def compute_mi_fidelity(transcript: list) -> dict:
@@ -637,6 +808,8 @@ def compute_mi_fidelity(transcript: list) -> dict:
         "empathy_events": empathy_count,
         "mi_score":       mi_score,
     }
+
+
 
 
 def analyze_hesitation(transcript: list) -> dict:
@@ -673,6 +846,8 @@ def analyze_hesitation(transcript: list) -> dict:
     }
 
 
+
+
 def build_graph_data() -> list:
     nodes    = []
     edges    = []
@@ -684,22 +859,12 @@ def build_graph_data() -> list:
     return {"nodes": nodes, "edges": edges}
 
 
+
+
 # ─────────────────────────────────────────────────────────────
-# PRE-CALL BRIEFING + DYNAMIC PROMPT INJECTION  (v5 — UPDATED)
+# PRE-CALL BRIEFING + DYNAMIC PROMPT INJECTION  (v5)
 # ─────────────────────────────────────────────────────────────
 def generate_pre_call_brief(patient: dict) -> dict:
-    """
-    Calls Groq to generate a patient-specific clinical strategy.
-    Returns:
-      strategy_summary       — shown on dashboard pre-call brief card
-      agent_instruction      — 2-sentence patient-specific note for Jessica
-      custom_system_prompt   — full Jessica prompt with patient context
-                               prepended. Injected into ElevenLabs via
-                               conversation_config_override for this call only.
-      risk_prediction        — LOW / MEDIUM / HIGH
-      priority_focus         — single most important topic today
-      sensitivities_reminder — comma-separated sensitive topics
-    """
     try:
         groq_client   = Groq(api_key=os.getenv("GROQ_API_KEY"))
         history_text  = json.dumps(patient.get("call_history", []), indent=2)
@@ -747,9 +912,6 @@ Generate a pre-call brief. Return ONLY valid JSON:
         )
         brief = json.loads(r.choices[0].message.content)
 
-        # ── BUILD CUSTOM SYSTEM PROMPT ──────────────────────────────
-        # Patient-specific block prepended to JESSICA_BASE_PROMPT.
-        # This is what gets injected into ElevenLabs per-call.
         patient_block = f"""=== PATIENT-SPECIFIC STRATEGY FOR THIS CALL ===
 Patient: {patient['name']} | Call #{call_count} | Predicted Risk: {brief.get('risk_prediction', 'MEDIUM')}
 
@@ -768,6 +930,7 @@ PRIOR CALL STRATEGY:
 {last_strategy}
 === END PATIENT STRATEGY — STANDARD RULES FOLLOW ===
 
+
 """
         brief["custom_system_prompt"] = patient_block + JESSICA_BASE_PROMPT
 
@@ -779,7 +942,6 @@ PRIOR CALL STRATEGY:
 
     except Exception as e:
         print(f"[PRE-CALL BRIEF ERROR] {e}")
-        # Fallback — base prompt unmodified
         return {
             "strategy_summary":       "Standard check-in. No prior history available.",
             "risk_prediction":        "MEDIUM",
@@ -790,6 +952,8 @@ PRIOR CALL STRATEGY:
             "watch_flags":            [],
             "custom_system_prompt":   JESSICA_BASE_PROMPT,
         }
+
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -847,6 +1011,13 @@ def trigger_auto_end(outcome: str = "completed"):
                     f"Index: {h.get('hesitation_index')} ({h.get('level')})\n"
                     + "\n".join(f"  - {p}" for p in h.get("notable_patterns", []))
                 )
+            # v6: log corrections to edge report
+            if global_state.corrections:
+                corr_text = f"\n\n[ANSWER CORRECTIONS — v6]\n"
+                corr_text += f"{len(global_state.corrections)} patient self-correction(s):\n"
+                for c in global_state.corrections:
+                    corr_text += f"  - [{c['topic']}]: '{c['original']}' → '{c['corrected']}'\n"
+                global_state.insights["edge_case_report"] += corr_text
 
             global_state.living_memory["ghost_alerts"].append({
                 "timestamp":   round(time.time(), 2),
@@ -880,6 +1051,8 @@ def trigger_auto_end(outcome: str = "completed"):
     threading.Thread(target=run_llm_task, daemon=True).start()
 
 
+
+
 # ─────────────────────────────────────────────────────────────
 # MAIN CALL RUNNER
 # ─────────────────────────────────────────────────────────────
@@ -892,7 +1065,8 @@ def run_call(patient_name: str, medication: str, patient_context: str,
 
     client = ElevenLabs(api_key=os.getenv("ELEVENLABS_API_KEY"))
 
-    # ── ALL 12 TOOLS ──
+    # ── ALL 13 TOOLS ──────────────────────────────────────────
+
     def log_answer(question_topic: str = "", patient_answer: str = "",
                    confidence: str = "clear", clinical_flag: str = "none", **kwargs):
         print(f"[LOG] {question_topic} -> {patient_answer} [{clinical_flag}]")
@@ -958,6 +1132,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             f"Recommended next: {lm['recommended_next_action']}. Proceed."
         )
 
+
     def get_memory_state(**kwargs) -> str:
         lm = global_state.living_memory
         return json.dumps({
@@ -976,6 +1151,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             "interview_depth":         global_state.interview_depth,
         })
 
+
     def verify_identity(patient_confirmed_name: str = "",
                         date_of_birth: str = "",
                         identity_match: str = "confirmed", **kwargs):
@@ -992,6 +1168,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             })
         return f"Identity {identity_match}. Proceed accordingly."
 
+
     def schedule_callback(preferred_day: str = "",
                           preferred_time_window: str = "",
                           phone_confirmed: str = "confirmed", **kwargs):
@@ -1002,6 +1179,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             "timestamp": time.time()
         })
         return "Callback scheduled. Proceed to end_call with outcome: rescheduled."
+
 
     def escalate_to_pharmacist(symptom_description: str = "",
                                 urgency_level: str = "urgent",
@@ -1022,16 +1200,21 @@ def run_call(patient_name: str, medication: str, patient_context: str,
         })
         return "Escalation flagged. End call immediately after safety messaging."
 
+
     def capture_pricing_concern(concern_description: str = "",
                                  patient_wants_followup: str = "yes", **kwargs):
         print(f"[PRICING] {concern_description}")
         accumulate_signal("pricing_question")
+        global_state.pricing_concern_level += 1
         if "pricing" not in global_state.living_memory["detected_flags"]:
             global_state.living_memory["detected_flags"].append("pricing")
         global_state.living_memory["handoff_required"]        = True
         global_state.living_memory["handoff_target"]          = "billing"
         global_state.living_memory["recommended_next_action"] = "handoff_billing"
+        # Update outcome probabilities immediately
+        global_state.living_memory["outcome_probabilities"] = compute_outcome_probabilities()
         return "Pricing concern logged. Billing specialist standby activated. Provide billing@trimrx.com and continue."
+
 
     def flag_contradiction(field_a: str = "", answer_a: str = "",
                             field_b: str = "", answer_b: str = "",
@@ -1050,6 +1233,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             )
         return "Contradiction logged. Probe gently before continuing."
 
+
     def end_call(outcome: str = "completed",
                  refill_approved: str = "yes",
                  summary: str = "", **kwargs):
@@ -1062,6 +1246,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             print(f"[COVERAGE LOCK WARNING] {len(remaining)} questions unanswered: {remaining}")
         trigger_auto_end(outcome)
         return "ended"
+
 
     def detect_ai_inquiry(patient_question: str = "",
                            response_given: str = "",
@@ -1081,6 +1266,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             + ("Continue with check-in." if patient_accepted_continuation == "yes"
                else "Patient declined. Call schedule_callback then end_call(outcome: rescheduled).")
         )
+
 
     def log_emotional_distress(distress_type: str = "",
                                 patient_statement: str = "",
@@ -1118,6 +1304,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             + instructions.get(distress_type, "Acknowledge with empathy. Continue when ready.")
         )
 
+
     def handle_caregiver_proxy(relationship_to_patient: str = "",
                                 caregiver_name: str = "",
                                 patient_available: str = "no", **kwargs):
@@ -1134,6 +1321,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             return "Caregiver proxy logged. Patient coming shortly. Re-attempt identity gate when on line."
         return "Caregiver proxy logged. Patient not available. Call schedule_callback, then end_call(rescheduled)."
 
+
     def request_human_transfer(reason: str = "", urgency: str = "normal", **kwargs):
         print(f"[HUMAN TRANSFER] reason={reason} urgency={urgency}")
         global_state.human_transfer_req = True
@@ -1147,7 +1335,70 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             return "URGENT transfer. Call escalate_to_pharmacist then end_call."
         return "Transfer logged. Call schedule_callback then end_call(rescheduled)."
 
-    # ── Register all 12 tools ──
+
+    # ── v6 NEW: Tool #13 — correct_answer ─────────────────────
+    def correct_answer(question_topic: str = "",
+                       corrected_answer: str = "",
+                       reason: str = "", **kwargs):
+        """
+        Called when patient self-corrects a previous answer.
+        Updates response slot, Living Memory, and logs a correction event.
+        Dashboard shows CORRECTED badge on that slot.
+        """
+        print(f"[CORRECTION] {question_topic}: '{corrected_answer}' (reason: {reason})")
+
+        original = ""
+
+        # Primary lookup by topic key
+        idx = TOPIC_TO_INDEX.get(question_topic)
+        if idx is not None and idx < len(global_state.responses):
+            original = global_state.responses[idx].get("answer", "")
+            global_state.responses[idx]["answer"]            = corrected_answer
+            global_state.responses[idx]["corrected"]         = True
+            global_state.responses[idx]["correction_reason"] = reason
+
+        # Fallback: string match on question text
+        for item in global_state.responses:
+            if question_topic.lower() in item["question"].lower() and not item.get("corrected"):
+                if not original:
+                    original = item.get("answer", "")
+                item["answer"]            = corrected_answer
+                item["corrected"]         = True
+                item["correction_reason"] = reason
+                break
+
+        # Log the correction event
+        correction_event = {
+            "topic":     question_topic,
+            "original":  original,
+            "corrected": corrected_answer,
+            "reason":    reason,
+            "timestamp": round(time.time(), 2),
+        }
+        global_state.corrections.append(correction_event)
+
+        # Ghost alert for dashboard
+        global_state.living_memory["ghost_alerts"].append({
+            "timestamp":   round(time.time(), 2),
+            "observation": (
+                f"Patient self-correction on [{question_topic}]: "
+                f"'{str(original)[:30]}' → '{corrected_answer[:30]}'"
+            ),
+            "topic": question_topic,
+            "risk":  "LOW",
+        })
+
+        # Re-run Living Memory with corrected answer (no flag change)
+        update_living_memory(question_topic, corrected_answer, "none")
+
+        return (
+            f"CORRECTED. [{question_topic}] updated from "
+            f"'{str(original)[:40]}' → '{corrected_answer[:40]}'. "
+            f"Response grid and Living Memory updated. Continue interview."
+        )
+
+
+    # ── Register all 13 tools ──
     tools = ClientTools()
     tools.register("log_answer",              log_answer)
     tools.register("get_memory_state",        get_memory_state)
@@ -1161,6 +1412,8 @@ def run_call(patient_name: str, medication: str, patient_context: str,
     tools.register("log_emotional_distress",  log_emotional_distress)
     tools.register("handle_caregiver_proxy",  handle_caregiver_proxy)
     tools.register("request_human_transfer",  request_human_transfer)
+    tools.register("correct_answer",          correct_answer)   # v6 NEW
+
 
     def agent_cb(text):
         if text.strip():
@@ -1173,22 +1426,22 @@ def run_call(patient_name: str, medication: str, patient_context: str,
                     "finish another time" in lower):
                 trigger_auto_end("completed_via_transcript")
 
+
     def user_cb(text):
         if text.strip() and text != "...":
             global_state.transcript.append({
                 "role": "user", "message": text, "timestamp": time.time()
             })
 
-    # ── DYNAMIC PROMPT INJECTION (v5 — NEW) ──────────────────
-    # Build patient-specific prompt. Inject via conversation_config_override.
-    # ElevenLabs applies this for THIS call only — permanent config untouched.
+
+    # ── DYNAMIC PROMPT INJECTION (v5) ────────────────────────
     custom_prompt  = None
     brief_summary  = "Standard check-in."
     dynamic_vars   = {
         "patient_name":    patient_name,
         "medication":      medication,
         "patient_context": patient_context,
-        "pre_call_brief":  brief_summary,   # fallback dynamic variable
+        "pre_call_brief":  brief_summary,
     }
 
     if patient_id:
@@ -1198,16 +1451,13 @@ def run_call(patient_name: str, medication: str, patient_context: str,
             custom_prompt = brief.get("custom_system_prompt")
             brief_summary = brief.get("strategy_summary", "Standard check-in.")
 
-            # Seed Living Memory with brief
             global_state.living_memory["pre_call_brief"]     = brief_summary
             global_state.living_memory["patient_risk_level"] = brief.get("risk_prediction", "MEDIUM")
             history = patient.get("call_history", [])
             global_state.living_memory["call_number"] = len(history) + 1
 
-            # Update dynamic variable with real brief
             dynamic_vars["pre_call_brief"] = brief_summary
 
-            # Auto-populate previous_call_context if not already set
             if not global_state.previous_call_context and history:
                 last = history[-1]
                 global_state.previous_call_context = (
@@ -1218,9 +1468,7 @@ def run_call(patient_name: str, medication: str, patient_context: str,
                     f"outcome={last.get('outcome','?')}"
                 )
 
-    # Build ConversationInitiationData with or without prompt override
     if custom_prompt:
-        # Full dynamic prompt injection — patient-specific prompt for this call
         config = ConversationInitiationData(
             dynamic_variables=dynamic_vars,
             conversation_config_override={
@@ -1239,7 +1487,6 @@ def run_call(patient_name: str, medication: str, patient_context: str,
         print(f"[PROMPT INJECTION] Custom prompt injected for {patient_id} "
               f"({len(custom_prompt)} chars)")
     else:
-        # No patient found — use ElevenLabs default prompt
         config = ConversationInitiationData(dynamic_variables=dynamic_vars)
         print("[PROMPT INJECTION] No patient found — using default ElevenLabs prompt")
 
@@ -1262,6 +1509,8 @@ def run_call(patient_name: str, medication: str, patient_context: str,
     except Exception as e:
         print("CONVERSATION ERROR:", e)
     global_state.call_duration = int(time.time() - global_state.start_time)
+
+
 
 
 # ─────────────────────────────────────────────────────────────
@@ -1310,6 +1559,10 @@ def get_state():
         "handoff_required":       lm["handoff_required"],
         "handoff_target":         lm["handoff_target"],
         "patient_id":             global_state.patient_id,
+        # v6 fields
+        "corrections":            global_state.corrections,
+        "pricing_concern_level":  global_state.pricing_concern_level,
+        "outcome_probabilities":  lm.get("outcome_probabilities", {}),
     }
 
 
@@ -1330,6 +1583,69 @@ def get_memory_state_endpoint():
         "pre_call_brief":          lm["pre_call_brief"],
         "signal_score":            global_state.signal_score,
         "behavior_mode":           compute_behavior_mode(),
+        # v6 additions
+        "outcome_probabilities":   lm.get("outcome_probabilities", {}),
+        "pricing_concern_level":   global_state.pricing_concern_level,
+    }
+
+
+# ─────────────────────────────────────────────────────────────
+# v6 NEW — /api/structured-output
+# Returns all responses in transcript_samples.json schema.
+# Directly satisfies: "produce structured responses in a similar format"
+# ─────────────────────────────────────────────────────────────
+@app.get("/api/structured-output")
+def get_structured_output():
+    idx_to_key = {v: k for k, v in TOPIC_TO_INDEX.items()}
+
+    questionnaire = []
+    for i, r in enumerate(global_state.responses):
+        topic_key = idx_to_key.get(i, f"probe_{i - 13}")
+        label     = QUESTION_LABELS.get(r["question"], r["question"][:40])
+
+        if r["answer"]:
+            conf = "auto_extracted" if r.get("auto_extracted") else "high"
+        else:
+            conf = "pending"
+
+        questionnaire.append({
+            "question_index":      i + 1,
+            "question_key":        topic_key,
+            "question_label":      label,
+            "question_text":       r["question"],
+            "captured_answer":     r["answer"] or None,
+            "confidence":          conf,
+            "clinical_flag":       r["flag"] if r.get("flag") and r["flag"] != "none" else None,
+            "corrected":           r.get("corrected", False),
+            "correction_reason":   r.get("correction_reason", None),
+            "auto_extracted":      r.get("auto_extracted", False),
+            "is_validation_probe": i >= 14,
+        })
+
+    primary    = questionnaire[:14]
+    validation = questionnaire[14:]
+    p_answered = sum(1 for r in primary    if r["captured_answer"])
+    v_answered = sum(1 for r in validation if r["captured_answer"])
+    total_ans  = p_answered + v_answered
+
+    return {
+        "call_id":                 global_state.patient_id or "demo",
+        "patient_name":            global_state.patient_name or "Unknown",
+        "generated_at":            time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "questionnaire_responses": primary,
+        "validation_probes":       validation,
+        "coverage_summary": {
+            "primary_answered":    p_answered,
+            "primary_total":       14,
+            "validation_answered": v_answered,
+            "validation_total":    5,
+            "total_answered":      total_ans,
+            "total_data_points":   19,
+            "coverage_pct":        round(total_ans / 19 * 100, 1),
+        },
+        "corrections_log":    global_state.corrections,
+        "flags_detected":     list(global_state.living_memory["detected_flags"]),
+        "final_outcome":      global_state.outcome,
     }
 
 
@@ -1339,11 +1655,6 @@ class PreCallBriefRequest(BaseModel):
 
 @app.post("/api/pre-call-brief")
 def pre_call_brief_endpoint(req: PreCallBriefRequest):
-    """
-    Called by ElevenLabs Workflow HTTP node OR dashboard button.
-    Fetches patient, generates Groq brief, seeds Living Memory.
-    Returns brief for dashboard display.
-    """
     patient = get_patient(req.patient_id)
     if not patient:
         brief = {
@@ -1364,13 +1675,12 @@ def pre_call_brief_endpoint(req: PreCallBriefRequest):
         history = patient.get("call_history", [])
         global_state.living_memory["call_number"] = len(history) + 1
 
-    # Don't return custom_system_prompt in API response (too large, not needed by dashboard)
     brief_for_response = {k: v for k, v in brief.items() if k != "custom_system_prompt"}
 
     return {
-        "patient_id":          req.patient_id,
-        "patient_name":        patient["name"] if patient else "Unknown",
-        "brief":               brief_for_response,
+        "patient_id":           req.patient_id,
+        "patient_name":         patient["name"] if patient else "Unknown",
+        "brief":                brief_for_response,
         "living_memory_seeded": True,
     }
 
@@ -1388,7 +1698,6 @@ def start(req: CallRequest, bg: BackgroundTasks):
     global global_state
     global_state = CallState()
 
-    # Store previous_call_context on state so run_call can access it
     global_state.previous_call_context = req.previous_call_context
 
     bg.add_task(

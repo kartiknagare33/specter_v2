@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SPECTER — Clinical Intelligence Dashboard v5</title>
+    <title>SPECTER — Clinical Intelligence Dashboard v6</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <style>
@@ -407,6 +407,10 @@
         border-color: var(--teal);
         background: rgba(90, 200, 250, 0.04);
       }
+      .r-slot.corrected {
+        border-color: var(--amber);
+        background: rgba(255, 159, 10, 0.06);
+      }
       .r-slot-label {
         font-size: 9px;
         color: var(--text2);
@@ -436,10 +440,20 @@
         color: var(--teal);
         font-size: 10px;
       }
+      .check-amber {
+        color: var(--amber);
+        font-size: 11px;
+      }
       .extract-badge {
         font-family: "DM Mono", monospace;
         font-size: 8px;
         color: var(--teal);
+        letter-spacing: 0.5px;
+      }
+      .corrected-badge {
+        font-family: "DM Mono", monospace;
+        font-size: 8px;
+        color: var(--amber);
         letter-spacing: 0.5px;
       }
 
@@ -563,7 +577,7 @@
         margin-bottom: 3px;
       }
 
-      /* ── GLP-1 RISK MATRIX CARD ── */
+      /* ── GLP-1 RISK MATRIX ── */
       .glp1-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -633,7 +647,7 @@
         color: var(--red);
       }
 
-      /* ── LONGITUDINAL DELTA CARD ── */
+      /* ── LONGITUDINAL DELTA ── */
       .delta-card {
         background: var(--card-bg);
         border: 1px solid var(--card-border);
@@ -718,7 +732,7 @@
         font-style: italic;
       }
 
-      /* ── HESITATION FINGERPRINT CARD ── */
+      /* ── HESITATION FINGERPRINT ── */
       .hesitation-card {
         background: rgba(255, 159, 10, 0.03);
         border: 1px solid rgba(255, 159, 10, 0.15);
@@ -852,7 +866,7 @@
         line-height: 1.4;
       }
 
-      /* ── VALIDATOR BADGE ── */
+      /* ── VALIDATOR ── */
       .validator-row {
         display: flex;
         align-items: center;
@@ -1107,10 +1121,10 @@
       }
 
       /* ══════════════════════════════════════════
-     NEW v5 STYLES
+     v5 STYLES
   ══════════════════════════════════════════ */
 
-      /* ── PRE-CALL BRIEF CARD ── */
+      /* ── PRE-CALL BRIEF ── */
       .precall-card {
         background: rgba(191, 90, 242, 0.04);
         border: 1px solid rgba(191, 90, 242, 0.25);
@@ -1165,7 +1179,7 @@
         background: rgba(191, 90, 242, 0.08);
       }
 
-      /* ── LIVING MEMORY PANEL ── */
+      /* ── LIVING MEMORY ── */
       .memory-card {
         background: rgba(10, 132, 255, 0.03);
         border: 1px solid rgba(10, 132, 255, 0.2);
@@ -1303,7 +1317,7 @@
         background: rgba(48, 209, 88, 0.08);
       }
 
-      /* ── GHOST ANALYST FEED ── */
+      /* ── GHOST ANALYST ── */
       .ghost-card {
         background: rgba(255, 159, 10, 0.02);
         border: 1px solid rgba(255, 159, 10, 0.18);
@@ -1377,7 +1391,7 @@
         color: var(--teal);
       }
 
-      /* ── NEXT-CALL STRATEGY CARD ── */
+      /* ── NEXT-CALL STRATEGY ── */
       .next-call-card {
         background: rgba(191, 90, 242, 0.04);
         border: 1px solid rgba(191, 90, 242, 0.3);
@@ -1433,6 +1447,210 @@
         letter-spacing: 1px;
       }
 
+      /* ══════════════════════════════════════════
+     v6 NEW STYLES
+  ══════════════════════════════════════════ */
+
+      /* ── OUTCOME PREDICTION BARS ── */
+      .outcome-section {
+        margin-top: 14px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+      }
+      .outcome-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 7px;
+      }
+      .outcome-label {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--text2);
+        width: 76px;
+        flex-shrink: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .outcome-track {
+        flex: 1;
+        height: 6px;
+        background: var(--bg3);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .outcome-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition:
+          width 0.5s ease,
+          background 0.5s ease;
+      }
+      .outcome-pct {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--text3);
+        width: 30px;
+        text-align: right;
+      }
+      .outcome-fill.completed {
+        background: var(--green);
+      }
+      .outcome-fill.escalated {
+        background: var(--red);
+      }
+      .outcome-fill.billing_concern {
+        background: var(--orange);
+      }
+      .outcome-fill.rescheduled {
+        background: var(--blue);
+      }
+      .outcome-fill.opted_out {
+        background: var(--purple);
+      }
+
+      /* ── PRICING SEVERITY INDICATOR ── */
+      .pricing-level {
+        display: inline-block;
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        letter-spacing: 1px;
+        margin-left: 6px;
+      }
+      .pricing-level-0 {
+        color: var(--text3);
+        border: 1px solid var(--border);
+      }
+      .pricing-level-1 {
+        color: var(--orange);
+        border: 1px solid rgba(255, 159, 10, 0.4);
+        background: rgba(255, 159, 10, 0.06);
+      }
+      .pricing-level-2 {
+        color: var(--red);
+        border: 1px solid rgba(255, 69, 58, 0.4);
+        background: rgba(255, 69, 58, 0.08);
+      }
+
+      /* ── STRUCTURED OUTPUT PANEL ── */
+      .structured-card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+      }
+      .structured-coverage-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0 10px;
+        font-family: "DM Mono", monospace;
+        font-size: 10px;
+        color: var(--text2);
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 10px;
+      }
+      .structured-coverage-num {
+        color: var(--green);
+        font-size: 14px;
+        font-weight: 500;
+      }
+      .structured-panel {
+        max-height: 320px;
+        overflow-y: auto;
+        padding-right: 2px;
+      }
+      .structured-panel::-webkit-scrollbar {
+        width: 3px;
+      }
+      .structured-panel::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+      .sq-row {
+        display: flex;
+        gap: 8px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        align-items: flex-start;
+      }
+      .sq-row:last-child {
+        border-bottom: none;
+      }
+      .sq-index {
+        font-family: "DM Mono", monospace;
+        font-size: 9px;
+        color: var(--text3);
+        width: 18px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .sq-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .sq-question {
+        font-size: 10px;
+        color: var(--text2);
+        margin-bottom: 3px;
+        line-height: 1.3;
+      }
+      .sq-answer {
+        font-size: 12px;
+        color: var(--text);
+        line-height: 1.4;
+        word-break: break-word;
+      }
+      .sq-answer.pending {
+        color: var(--text3);
+        font-style: italic;
+      }
+      .sq-flags {
+        display: flex;
+        gap: 4px;
+        flex-wrap: wrap;
+        margin-top: 4px;
+      }
+      .sq-flag {
+        font-family: "DM Mono", monospace;
+        font-size: 8px;
+        padding: 1px 5px;
+        border-radius: 3px;
+        letter-spacing: 0.5px;
+      }
+      .sq-flag.conf-high {
+        color: var(--green);
+        border: 1px solid rgba(48, 209, 88, 0.3);
+        background: rgba(48, 209, 88, 0.06);
+      }
+      .sq-flag.conf-auto_extracted {
+        color: var(--teal);
+        border: 1px solid rgba(90, 200, 250, 0.3);
+        background: rgba(90, 200, 250, 0.06);
+      }
+      .sq-flag.conf-pending {
+        color: var(--text3);
+        border: 1px solid var(--border);
+      }
+      .sq-flag.flag-clinical {
+        color: var(--orange);
+        border: 1px solid rgba(255, 159, 10, 0.3);
+        background: rgba(255, 159, 10, 0.06);
+      }
+      .sq-flag.flag-corrected {
+        color: var(--amber);
+        border: 1px solid rgba(255, 159, 10, 0.4);
+        background: rgba(255, 159, 10, 0.08);
+      }
+      .structured-empty {
+        text-align: center;
+        padding: 20px 0;
+        color: var(--text3);
+        font-size: 11px;
+      }
+
       @keyframes fadeIn {
         from {
           opacity: 0;
@@ -1443,8 +1661,6 @@
           transform: translateY(0);
         }
       }
-
-      /* ── HIDDEN ── */
       .hidden {
         display: none !important;
       }
@@ -1457,7 +1673,7 @@
         <div>
           <div class="logo">SPECTER</div>
           <div class="logo-sub">
-            CLINICAL INTELLIGENCE PLATFORM · TRIMRX · V5 · LIVING MEMORY
+            CLINICAL INTELLIGENCE PLATFORM · TRIMRX · V6 · LIVING MEMORY
           </div>
         </div>
         <div class="header-badge badge-ready" id="status-badge">STANDBY</div>
@@ -1579,7 +1795,7 @@
           </button>
         </div>
 
-        <!-- NEW v5: Pre-Call Brief Card -->
+        <!-- Pre-Call Brief -->
         <div class="precall-card" id="precall-card">
           <div
             class="card-title"
@@ -1636,7 +1852,7 @@
           <div id="probe-array"></div>
         </div>
 
-        <!-- Multi-Extract Indicator -->
+        <!-- Multi-Extract -->
         <div class="extract-card" id="extract-card">
           <div class="card-title" style="margin-bottom: 8px">
             Multi-Answer Capture
@@ -1700,7 +1916,7 @@
           <div class="transcript-scroll" id="transcript"></div>
         </div>
 
-        <!-- NEW v5: Ghost Analyst Feed -->
+        <!-- Ghost Analyst Feed -->
         <div class="ghost-card" id="ghost-card">
           <div
             class="card-title"
@@ -1729,7 +1945,7 @@
           <div class="ghost-feed" id="ghost-feed"></div>
         </div>
 
-        <!-- NEW v5: Living Memory Panel -->
+        <!-- Living Memory Panel -->
         <div class="memory-card" id="memory-card">
           <div
             class="card-title"
@@ -1797,8 +2013,38 @@
               >None yet</span
             >
           </div>
+          <!-- v6: Pricing Severity Indicator -->
+          <div
+            style="
+              margin-top: 6px;
+              font-family: &quot;DM Mono&quot;, monospace;
+              font-size: 9px;
+              color: var(--text2);
+            "
+          >
+            PRICING SEVERITY
+            <span id="pricing-level-badge" class="pricing-level pricing-level-0"
+              >NONE</span
+            >
+          </div>
           <div class="memory-next-action" id="memory-next-action">
             AWAITING CALL START
+          </div>
+
+          <!-- v6: Live Outcome Prediction -->
+          <div class="outcome-section">
+            <div
+              style="
+                font-family: &quot;DM Mono&quot;, monospace;
+                font-size: 9px;
+                color: var(--text2);
+                letter-spacing: 2px;
+                margin-bottom: 10px;
+              "
+            >
+              LIVE OUTCOME PREDICTION
+            </div>
+            <div id="outcome-bars"></div>
           </div>
         </div>
       </div>
@@ -1873,6 +2119,39 @@
           </div>
         </div>
 
+        <!-- v6: Structured Output Panel -->
+        <div class="structured-card" id="structured-card">
+          <div class="card-title">
+            STRUCTURED OUTPUT — Q&A CAPTURE
+            <div style="display: flex; align-items: center; gap: 6px">
+              <span
+                id="struct-coverage-badge"
+                style="
+                  font-family: &quot;DM Mono&quot;, monospace;
+                  font-size: 9px;
+                  color: var(--text3);
+                "
+                >0/14</span
+              >
+              <div class="card-title-dot blue"></div>
+            </div>
+          </div>
+          <div class="structured-coverage-row">
+            <span>Primary Q&A captured</span>
+            <span
+              ><span class="structured-coverage-num" id="struct-answered-count"
+                >0</span
+              >
+              / 14 · <span id="struct-cov-pct">0%</span></span
+            >
+          </div>
+          <div class="structured-panel" id="structured-panel">
+            <div class="structured-empty">
+              Answers will appear here live during the call
+            </div>
+          </div>
+        </div>
+
         <!-- Response Grid -->
         <div class="card">
           <div class="card-title">
@@ -1884,11 +2163,12 @@
               font-size: 9px;
               color: var(--teal);
               font-family: &quot;DM Mono&quot;, monospace;
-              margin-bottom: 8px;
+              margin-bottom: 4px;
               letter-spacing: 0.5px;
             "
           >
-            ○ TEAL = AUTO-EXTRACTED FROM PATIENT SPEECH
+            ◈ TEAL = AUTO-EXTRACTED &nbsp;·&nbsp;
+            <span style="color: var(--amber)">↺ AMBER = CORRECTED</span>
           </div>
           <div class="response-grid" id="response-grid"></div>
         </div>
@@ -1958,7 +2238,7 @@
           <div id="priority-actions"></div>
         </div>
 
-        <!-- NEW v5: Next-Call Strategy Card -->
+        <!-- Next-Call Strategy Card -->
         <div class="next-call-card" id="next-call-card">
           <div
             class="card-title"
@@ -2085,6 +2365,7 @@
       let timerSecs = 0;
       let timerInterval = null;
       let lastGhostCount = 0;
+      let lastStructuredAnswered = 0;
 
       // ── WAVEFORM INIT ──
       (function initWaveform() {
@@ -2142,15 +2423,14 @@
             const isGold = k === "H_mi_fidelity";
             return `<div class="probe-row">
       <div class="probe-label" style="${isGold ? "color:var(--gold)" : ""}">${label}</div>
-      <div class="probe-track">
-        <div class="probe-fill" style="width:${pct}%;background:${isGold ? "var(--gold)" : color}"></div>
-      </div>
+      <div class="probe-track"><div class="probe-fill" style="width:${pct}%;background:${isGold ? "var(--gold)" : color}"></div></div>
       <div class="probe-val">${pct}%</div>
     </div>`;
           })
           .join("");
       }
 
+      // v6 updated: adds corrected badge
       function renderResponses(responses) {
         const el = document.getElementById("response-grid");
         const primary = responses.slice(0, 14);
@@ -2159,21 +2439,27 @@
             const label = r.question.split("?")[0].trim().substring(0, 22);
             const hasAns = r.answer && r.answer.trim();
             const isExtracted = r.auto_extracted;
-            const isVal = i >= 14;
+            const isCorrected = r.corrected;
+
             let slotClass = "r-slot";
-            if (hasAns)
-              slotClass += isExtracted
-                ? " extracted"
-                : isVal
-                  ? " validation answered"
-                  : " answered";
-            else if (isVal) slotClass += " validation";
+            if (isCorrected) slotClass += " corrected";
+            else if (hasAns && isExtracted) slotClass += " extracted";
+            else if (hasAns) slotClass += " answered";
+
+            let icon = "○";
+            if (isCorrected) icon = '<span class="check-amber">↺</span>';
+            else if (hasAns && isExtracted)
+              icon = '<span class="check-teal">◈</span>';
+            else if (hasAns) icon = '<span class="check">✓</span>';
+
+            const badges = [];
+            if (isExtracted && !isCorrected)
+              badges.push('<span class="extract-badge">AUTO</span>');
+            if (isCorrected)
+              badges.push('<span class="corrected-badge">CORRECTED</span>');
+
             return `<div class="${slotClass}">
-      <div class="r-slot-label">
-        ${hasAns ? (isExtracted ? '<span class="check-teal">◈</span>' : isVal ? '<span class="check-purple">✓</span>' : '<span class="check">✓</span>') : "○"}
-        ${label}
-        ${isExtracted ? '<span class="extract-badge">AUTO</span>' : ""}
-      </div>
+      <div class="r-slot-label">${icon} ${label} ${badges.join("")}</div>
       ${hasAns ? `<div class="r-slot-answer">${r.answer.substring(0, 60)}</div>` : ""}
     </div>`;
           })
@@ -2477,7 +2763,6 @@
         renderMIFidelity(insights.mi_score, insights.mi_assessment);
         renderLongitudinalDelta(insights.longitudinal_delta);
         renderGLP1Matrix(insights.glp1_risk_factors);
-        // v5: render Next-Call Strategy
         if (insights.next_call_strategy) {
           renderNextCallStrategy(
             insights.next_call_strategy_structured || {
@@ -2486,8 +2771,6 @@
           );
         }
       }
-
-      // ── NEW v5 RENDER FUNCTIONS ──
 
       function renderPreCallBrief(brief) {
         if (!brief) return;
@@ -2519,12 +2802,10 @@
         const card = document.getElementById("memory-card");
         card.classList.add("visible");
 
-        // Coverage
         const pct = Math.round((memState.coverage_pct || 0) * 100);
         document.getElementById("memory-coverage-pct").textContent = pct + "%";
         document.getElementById("memory-coverage-fill").style.width = pct + "%";
 
-        // Emotional state
         const es = (memState.emotional_state || "neutral").toLowerCase();
         const badge = document.getElementById("memory-emotional-badge");
         badge.textContent = (
@@ -2532,7 +2813,6 @@
         ).toUpperCase();
         badge.className = `memory-emotional-badge ${es}`;
 
-        // Question pills
         const allKeys = [
           "overall_feeling",
           "current_weight",
@@ -2558,7 +2838,6 @@
           })
           .join("");
 
-        // Detected flags
         const flags = memState.detected_flags || [];
         const flagsEl = document.getElementById("memory-flags-row");
         if (flags.length > 0) {
@@ -2572,7 +2851,6 @@
             '<span style="font-size:10px;color:var(--text3);font-style:italic">None detected</span>';
         }
 
-        // Recommended next action
         const nextEl = document.getElementById("memory-next-action");
         const next = (memState.recommended_next_action || "continue_interview")
           .replace(/_/g, " ")
@@ -2591,12 +2869,9 @@
         if (!alerts || !alerts.length) return;
         const card = document.getElementById("ghost-card");
         card.classList.add("visible");
-
-        // Only render new alerts since last render
         if (alerts.length <= lastGhostCount) return;
         const newAlerts = alerts.slice(lastGhostCount);
         lastGhostCount = alerts.length;
-
         const feed = document.getElementById("ghost-feed");
         newAlerts.forEach((a) => {
           const div = document.createElement("div");
@@ -2630,6 +2905,113 @@
           document.getElementById("next-call-opening-text").textContent =
             openingText;
         }
+      }
+
+      // ── v6 NEW: renderOutcomeProbabilities ──────────────────────────
+      const OUTCOME_META = {
+        completed: { label: "COMPLETED", cls: "completed" },
+        escalated: { label: "ESCALATED", cls: "escalated" },
+        billing_concern: { label: "BILLING", cls: "billing_concern" },
+        rescheduled: { label: "RESCHEDULED", cls: "rescheduled" },
+        opted_out: { label: "OPT-OUT", cls: "opted_out" },
+      };
+
+      function renderOutcomeProbabilities(probs) {
+        if (!probs) return;
+        const el = document.getElementById("outcome-bars");
+        if (!el) return;
+        const sorted = Object.entries(probs).sort(([, a], [, b]) => b - a);
+        el.innerHTML = sorted
+          .map(([key, pct]) => {
+            const meta = OUTCOME_META[key] || {
+              label: key.toUpperCase(),
+              cls: key,
+            };
+            return `
+      <div class="outcome-row">
+        <div class="outcome-label">${meta.label}</div>
+        <div class="outcome-track">
+          <div class="outcome-fill ${meta.cls}" style="width:${pct}%"></div>
+        </div>
+        <div class="outcome-pct">${pct}%</div>
+      </div>`;
+          })
+          .join("");
+      }
+
+      // ── v6 NEW: renderPricingLevel ──────────────────────────────────
+      function renderPricingLevel(level) {
+        const el = document.getElementById("pricing-level-badge");
+        if (!el) return;
+        const lvl = parseInt(level) || 0;
+        const labels = ["NONE", "NOTED ×1", "BARRIER ×" + lvl];
+        el.textContent = labels[Math.min(lvl, 2)];
+        el.className = `pricing-level pricing-level-${Math.min(lvl, 2)}`;
+      }
+
+      // ── v6 NEW: renderStructuredOutput ─────────────────────────────
+      function renderStructuredOutput(data) {
+        if (!data || !data.questionnaire_responses) return;
+
+        const rows = data.questionnaire_responses;
+        const answered = rows.filter((r) => r.captured_answer).length;
+        const covPct = data.coverage_summary
+          ? data.coverage_summary.coverage_pct
+          : 0;
+
+        // Don't re-render if nothing changed
+        if (answered === lastStructuredAnswered && answered > 0) return;
+        lastStructuredAnswered = answered;
+
+        document.getElementById("struct-answered-count").textContent = answered;
+        document.getElementById("struct-cov-pct").textContent = covPct + "%";
+        document.getElementById("struct-coverage-badge").textContent =
+          answered + "/14";
+
+        const panel = document.getElementById("structured-panel");
+        if (answered === 0) {
+          panel.innerHTML =
+            '<div class="structured-empty">Answers will appear here live during the call</div>';
+          return;
+        }
+
+        panel.innerHTML = rows
+          .map((r) => {
+            const hasAns = !!r.captured_answer;
+            const conf = r.confidence || "pending";
+            const isCorrected = r.corrected;
+            const isAuto = r.auto_extracted;
+
+            let confLabel = "CONFIRMED";
+            if (isCorrected) confLabel = "CORRECTED";
+            else if (conf === "auto_extracted") confLabel = "AUTO";
+            else if (conf === "pending") confLabel = "PENDING";
+
+            const flags = [];
+            if (hasAns)
+              flags.push(
+                `<span class="sq-flag conf-${conf}">${confLabel}</span>`,
+              );
+            if (r.clinical_flag)
+              flags.push(
+                `<span class="sq-flag flag-clinical">⚑ ${r.clinical_flag.replace(/_/g, " ")}</span>`,
+              );
+            if (isCorrected)
+              flags.push(
+                `<span class="sq-flag flag-corrected">↺ SELF-CORRECTED</span>`,
+              );
+
+            return `
+      <div class="sq-row">
+        <div class="sq-index">Q${r.question_index}</div>
+        <div class="sq-content">
+          <div class="sq-question">${r.question_label}</div>
+          <div class="sq-answer ${hasAns ? "" : "pending"}">${hasAns ? r.captured_answer : "—"}</div>
+          ${flags.length ? `<div class="sq-flags">${flags.join("")}</div>` : ""}
+        </div>
+      </div>`;
+          })
+          .join("");
       }
 
       // ── RADAR CHART ──
@@ -2767,6 +3149,9 @@
             renderHesitationFingerprint(state.hesitation_fingerprint);
           }
 
+          // v6: fetch structured output and render
+          fetchAndRenderStructuredOutput();
+
           if (state.outcome && callActive) {
             callActive = false;
             animateWave(false);
@@ -2789,12 +3174,26 @@
           const memState = await res.json();
           renderLivingMemory(memState);
           renderGhostAlerts(memState.ghost_alerts || []);
+          // v6 additions
+          renderOutcomeProbabilities(memState.outcome_probabilities);
+          renderPricingLevel(memState.pricing_concern_level || 0);
         } catch (e) {
           /* silent */
         }
       }
 
-      // ── GENERATE PRE-CALL BRIEF (button) ──
+      // ── v6 NEW: fetch and render structured output ─────────────────
+      async function fetchAndRenderStructuredOutput() {
+        try {
+          const res = await fetch("/api/structured-output");
+          const data = await res.json();
+          renderStructuredOutput(data);
+        } catch (e) {
+          /* silent */
+        }
+      }
+
+      // ── GENERATE PRE-CALL BRIEF ──
       async function generateBrief() {
         const patientId = document.getElementById("patient-id").value.trim();
         if (!patientId) {
@@ -2839,6 +3238,12 @@
         document.getElementById("transcript").innerHTML = "";
         document.getElementById("response-grid").innerHTML = "";
         document.getElementById("probe-array").innerHTML = "";
+        document.getElementById("structured-panel").innerHTML =
+          '<div class="structured-empty">Answers will appear here live during the call</div>';
+        document.getElementById("struct-answered-count").textContent = "0";
+        document.getElementById("struct-cov-pct").textContent = "0%";
+        document.getElementById("struct-coverage-badge").textContent = "0/14";
+        document.getElementById("outcome-bars").innerHTML = "";
         document
           .getElementById("contradiction-card")
           .classList.remove("visible");
@@ -2863,8 +3268,10 @@
         document.getElementById("ghost-feed").innerHTML = "";
         document.getElementById("memory-flags-row").innerHTML = "";
         document.getElementById("memory-q-grid").innerHTML = "";
+        renderPricingLevel(0);
         lastTxLength = 0;
         lastGhostCount = 0;
+        lastStructuredAnswered = 0;
         window._callStartTime = Date.now() / 1000;
 
         await fetch("/api/start-call", {
@@ -2905,18 +3312,34 @@
         document.getElementById("btn-start").disabled = false;
       }
 
-      // ── EXPORT ──
-      function exportJSON() {
-        if (!lastState) return;
-        const blob = new Blob([JSON.stringify(lastState, null, 2)], {
-          type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `specter-v5-dossier-${Date.now()}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+      // ── EXPORT (v6: exports structured JSON) ──
+      async function exportJSON() {
+        // Export structured output (new v6 format)
+        try {
+          const res = await fetch("/api/structured-output");
+          const data = await res.json();
+          const blob = new Blob([JSON.stringify(data, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `specter-v6-structured-${data.call_id}-${Date.now()}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          // Fallback to old export
+          if (!lastState) return;
+          const blob = new Blob([JSON.stringify(lastState, null, 2)], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `specter-v6-dossier-${Date.now()}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }
       }
 
       // ── INIT ──
