@@ -155,3 +155,4 @@ def upsert_patient(patient_id: str, name: str, dob: str = ""):
     )
     conn.commit()
     conn.close()
+
