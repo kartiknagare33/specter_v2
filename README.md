@@ -1,6 +1,7 @@
 # SPECTER — Clinical Intelligence Voice Agent
 ### VoiceHack 2026 · Team Blitzkrieg
 
+[SPECTER Master Doc Link (for all info)](https://docs.google.com/document/d/1b4BnjpXAxS7vS9YRUrm1x5pAROAKvhysqrb_qub4p9k/edit?usp=sharing)
 ---
 
 > **⚠️ Active Development Notice**
